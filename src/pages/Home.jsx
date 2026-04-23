@@ -54,16 +54,13 @@ export default function Home() {
       />
       
       {/* 1. HERO BANNER SECTION */}
-      <section className="relative px-4 py-16 md:py-24 overflow-hidden bg-slate-900 text-white">
+      <section className="relative px-4 py-16 md:py-24 overflow-hidden bg-red-900 text-white">
         {/* Background Decorative Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-900 opacity-90 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-black to-red-900 opacity-90 z-0"></div>
         
         <div className="container mx-auto max-w-4xl relative z-10 text-center flex flex-col items-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-500/20 text-blue-200 text-sm font-bold mb-6 tracking-widest border border-blue-500/30">
-            PREMIUM 커뮤니티 꿀팁 사전
-          </span>
           <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight tracking-tight">
-            오늘의 삶을 <span className="text-blue-400">10%</span> 더 쾌적하게.
+            오늘의 삶을 <span className="text-yellow-400">10%</span> 더 쾌적하게.
           </h1>
           <p className="text-slate-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-medium">
             일상의 사소한 불편함부터 공간 혁신까지, <br className="hidden md:block" />에디터가 엄선한 최고의 해결책을 만나보세요.
