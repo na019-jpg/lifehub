@@ -193,14 +193,36 @@ export default function Admin() {
     clearForm();
   };
 
-  const exportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", "content.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+  const [isDeploying, setIsDeploying] = useState(false);
+
+  const handleDeploy = async () => {
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      alert('⚠️ 인터넷에 접속된 화면에서는 배포할 수 없습니다!\n반드시 컴퓨터의 로컬 환경(localhost:5173)에서 실행하세요.');
+      return;
+    }
+    
+    if (!window.confirm("현재까지 작성 및 수정한 모든 내용을 실제 웹사이트에 배포하시겠습니까?\n(배포 후 약 1분 뒤에 인터넷에 반영됩니다)")) return;
+    
+    setIsDeploying(true);
+    try {
+      const res = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        alert('🎉 성공적으로 전송되었습니다!\n\n약 1~2분 뒤에 실제 스마트폰이나 인터넷 주소창에서 사이트 새로고침(F5)을 해보세요.');
+      } else {
+        alert('❌ 배포 오류 발생:\n' + (result.error || '알 수 없는 에러입니다.'));
+        console.error(result.stderr);
+      }
+    } catch (e) {
+      alert('❌ 서버 통신 오류입니다. 프로그램을 완전히 껐다가 다시 실행해 주세요.');
+    } finally {
+      setIsDeploying(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -220,7 +242,13 @@ export default function Admin() {
       <SeoHelmet title="관리자 대시보드" />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-black text-slate-800">⚙️ 블로그 CMS 관리자</h1>
-        <button onClick={exportJSON} className="bg-green-100 text-green-700 font-bold px-4 py-2 rounded-xl text-sm">⬇️ JSON 다운로드</button>
+        <button 
+          onClick={handleDeploy} 
+          disabled={isDeploying}
+          className={`${isDeploying ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 shadow-blue-200'} text-white font-black px-5 py-3 rounded-2xl shadow-lg transition-all`}
+        >
+          {isDeploying ? '⏳ 배포 서버로 전송 중...' : '🚀 한 번에 실제 사이트로 배포하기'}
+        </button>
       </div>
 
       {/* Tabs */}
