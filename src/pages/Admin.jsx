@@ -7,7 +7,7 @@ export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   
-  // Tabs State: 'write' or 'manage'
+  // Tabs State: 'write', 'manage', or 'analytics'
   const [activeTab, setActiveTab] = useState('write');
   
   // Edit State
@@ -265,7 +265,69 @@ export default function Admin() {
         >
           📚 발행된 글 관리
         </button>
+        <button 
+          onClick={() => setActiveTab('analytics')}
+          className={`flex-1 py-3 rounded-xl font-bold transition-colors ${activeTab === 'analytics' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+        >
+          📊 방문자 통계
+        </button>
       </div>
+
+      {activeTab === 'analytics' && (
+        <section className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 rounded-3xl shadow-md">
+              <div className="text-4xl font-black">{data.posts.length}</div>
+              <div className="text-blue-100 font-bold mt-1 text-sm">발행된 포스팅</div>
+            </div>
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-5 rounded-3xl shadow-md">
+              <div className="text-4xl font-black">{data.categories.length}</div>
+              <div className="text-purple-100 font-bold mt-1 text-sm">카테고리</div>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 rounded-3xl shadow-md col-span-2">
+              <div className="text-2xl font-black">Vercel Analytics</div>
+              <div className="text-emerald-100 font-bold mt-1 text-sm">실시간 방문자 데이터 연동 완료 ✅</div>
+            </div>
+          </div>
+          
+          {/* Vercel Analytics Link Card */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+            <div className="flex items-start gap-6">
+              <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-white text-3xl flex-shrink-0">▲</div>
+              <div className="flex-1">
+                <h2 className="text-xl font-black text-slate-800 mb-2">Vercel Analytics 대시보드</h2>
+                <p className="text-slate-500 text-sm mb-4">시간 · 일 · 주 · 월 · 년 단위의 방문자 수, 국가별 통계, 페이지별 조회수, 기기 유형 등 상세 데이터를 여기서 확인하세요.</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 text-sm">
+                  <div className="bg-slate-50 rounded-xl p-3 text-center font-bold text-slate-700">⏰ 시간별</div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-center font-bold text-slate-700">📅 일별</div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-center font-bold text-slate-700">📆 주별</div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-center font-bold text-slate-700">🗓️ 월/년별</div>
+                </div>
+                <a 
+                  href="https://vercel.com/na019-jpg/lifehub/analytics" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-black hover:bg-slate-800 text-white font-black px-6 py-3 rounded-2xl transition-all hover:scale-105 shadow-lg"
+                >
+                  📊 Vercel 통계 대시보드 바로 열기 →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Guide Card */}
+          <div className="bg-blue-50 border border-blue-100 rounded-3xl p-6">
+            <h3 className="font-black text-blue-900 mb-3">💡 사용 방법</h3>
+            <ol className="space-y-2 text-sm text-blue-800 font-medium list-decimal list-inside">
+              <li>위 "Vercel 통계 대시보드 바로 열기" 버튼을 클릭합니다.</li>
+              <li>Vercel 로그인 후, 상단의 기간 필터(오늘/1주/1달/1년)를 선택합니다.</li>
+              <li>방문자 수, 페이지뷰, 인기 글 순위 등을 확인합니다.</li>
+            </ol>
+            <p className="text-xs text-blue-600 mt-3">* Analytics 데이터는 실제 배포된 사이트에서 방문이 시작된 이후부터 쌓입니다.</p>
+          </div>
+        </section>
+      )}
 
       {activeTab === 'manage' && (
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
