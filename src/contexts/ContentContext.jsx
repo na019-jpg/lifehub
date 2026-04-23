@@ -9,7 +9,14 @@ export function ContentProvider({ children }) {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // Force update categories structure to the latest one from content.json
+        
+        // --- 핵심 캐시 병합 로직 (서버 업데이트 반영) ---
+        // 브라우저 캐시에 없는 새로운 포스트가 서버(initialData)에 배포되었다면, 그것만 쏙 빼서 강제 병합합니다.
+        const existingIds = new Set(parsed.posts.map(p => p.id));
+        const newPostsFromServer = initialData.posts.filter(p => !existingIds.has(p.id));
+        parsed.posts = [...newPostsFromServer, ...parsed.posts];
+        
+        // 카테고리 구조 등은 무조건 최신 서버 구조를 강제 반영
         parsed.categories = initialData.categories;
         return parsed;
       } catch (e) {
