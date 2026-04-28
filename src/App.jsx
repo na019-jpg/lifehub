@@ -36,9 +36,9 @@ function App() {
           <Link to="/policy/terms" className="hover:text-indigo-600 transition">Terms of Service</Link>
         </div>
 
-        <p>© {new Date().getFullYear()} LifeHub. 당신의 일상을 이롭게 하는 기온별 코디와 생활 정보 허브.</p>
+        <p>© {new Date().getFullYear()} LifeHub. 당신의 일상을 이롭게 하는 프리미엄 생활 정보 매거진.</p>
         <div className="mt-4 text-xs text-slate-400 flex items-center justify-center gap-4">
-          <span>Powered by React Router & Open-Meteo</span>
+          <span>Powered by React & TailwindCSS</span>
         </div>
       </footer>
     </div>
