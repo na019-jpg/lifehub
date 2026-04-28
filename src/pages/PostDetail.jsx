@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SeoHelmet from '../components/SeoHelmet';
 import AdPlaceholder from '../components/AdPlaceholder';
@@ -9,6 +9,45 @@ export default function PostDetail() {
   const { data } = useContent();
   const post = data.posts.find(p => p.slug === slug);
   const category = data.categories.find(c => c.id === post?.categoryId);
+
+  // 1. Scroll Progress State
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (windowHeight === 0) return;
+      const scroll = `${totalScroll / windowHeight}`;
+      setScrollProgress(scroll * 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 4. Share Handler
+  const handleShare = async () => {
+    const shareData = {
+      title: post?.title,
+      text: post?.summary,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('링크가 클립보드에 복사되었습니다! 친구들에게 공유해보세요.');
+    }
+  };
+
+  // 3. Related Posts
+  const relatedPosts = data.posts
+    .filter(p => p.categoryId === post?.categoryId && p.id !== post?.id)
+    .slice(0, 3);
 
   if (!post) {
     return (
@@ -54,7 +93,12 @@ export default function PostDetail() {
   ];
 
   return (
-    <article className="bg-white min-h-screen">
+    <article className="bg-white min-h-screen relative">
+      {/* 1. Scroll Progress Bar */}
+      <div 
+        className="fixed top-0 left-0 h-1.5 bg-indigo-600 z-[100] transition-all duration-150 ease-out" 
+        style={{ width: `${scrollProgress}%` }}
+      ></div>
       <SeoHelmet 
         title={post.title} 
         description={post.summary} 
@@ -160,6 +204,22 @@ export default function PostDetail() {
             </div>
           </section>
 
+          {/* 2. 맥락형 미니 쿠팡 배너 (해결 방법 직후 삽입) */}
+          {content.recommendation && content.recommendation.url && (
+            <div className="my-8 bg-indigo-50 border border-indigo-100 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm hover:shadow-md transition">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📦</span>
+                <div>
+                  <p className="text-xs font-bold text-indigo-600 mb-0.5">에디터가 직접 효과 본 해결템</p>
+                  <p className="text-sm font-bold text-slate-800 line-clamp-1">{content.recommendation.name}</p>
+                </div>
+              </div>
+              <a href={content.recommendation.url} target="_blank" rel="noreferrer noopener" className="w-full sm:w-auto text-center bg-indigo-600 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-sm shrink-0">
+                로켓배송 보러가기 ➔
+              </a>
+            </div>
+          )}
+
           {/* Ad 2: 본문 중간 */}
           <div className="my-10 py-6 border-y border-slate-100 flex justify-center">
             <AdPlaceholder position="본문 중간 매치드 콘텐츠 광고" />
@@ -231,6 +291,38 @@ export default function PostDetail() {
         <div className="mt-16 border-t border-slate-200 pt-10 flex justify-center">
           <AdPlaceholder position="본문 하단 추천 위젯형 광고" />
         </div>
+
+        {/* 4. 공유하기 버튼 */}
+        <div className="mt-12 flex justify-center">
+          <button onClick={handleShare} className="flex items-center gap-2 bg-[#FEE500] hover:bg-[#F4DC00] text-slate-900 font-black px-8 py-4 rounded-2xl shadow-lg shadow-yellow-200/50 transition transform hover:-translate-y-1 w-full md:w-auto justify-center">
+            <span className="text-xl">💬</span>
+            카카오톡 등 유용한 꿀팁 공유하기
+          </button>
+        </div>
+
+        {/* 3. 다음 꿀팁 이어보기 (Related Posts) */}
+        {relatedPosts.length > 0 && (
+          <section className="mt-16 border-t border-slate-200 pt-12 pb-24 md:pb-8">
+            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><span>✨</span> 이런 생활 꿀팁은 어떠세요?</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {relatedPosts.map(rp => (
+                <Link key={rp.id} to={`/post/${rp.slug}`} onClick={() => window.scrollTo(0,0)} className="group block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
+                  {rp.thumbnailUrl ? (
+                    <div className="w-full aspect-[4/3] overflow-hidden">
+                      <img src={rp.thumbnailUrl} alt={rp.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-[4/3] bg-slate-100 flex items-center justify-center text-slate-300">No Image</div>
+                  )}
+                  <div className="p-4">
+                    <h4 className="font-bold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition leading-snug">{rp.title}</h4>
+                    <div className="text-xs text-slate-400 mt-2 font-bold">{rp.date}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
 
