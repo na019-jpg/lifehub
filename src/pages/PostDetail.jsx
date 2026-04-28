@@ -78,7 +78,19 @@ export default function PostDetail() {
       "dateModified": post.date,
       "author": {
         "@type": "Person",
-        "name": "Editor"
+        "name": "LifeHub Editor"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "LifeHub",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://lifestyle-hub.co.kr/logo.png"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": window.location.href
       },
       "description": post.summary
     },
@@ -140,7 +152,13 @@ export default function PostDetail() {
         {/* Thumbnail */}
         {post.thumbnailUrl && (
           <figure className="mb-10 w-full aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden">
-            <img src={post.thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
+            <img 
+              src={post.thumbnailUrl} 
+              alt={post.title} 
+              className="w-full h-full object-cover" 
+              loading="lazy" 
+              decoding="async" 
+            />
           </figure>
         )}
 
@@ -156,11 +174,11 @@ export default function PostDetail() {
           <ul className="space-y-3 relative z-10 bg-white/60 p-5 rounded-xl border border-white/80">
             <li className="flex items-start gap-2">
               <span className="text-red-500 font-bold shrink-0">🎯 문제/원인:</span>
-              <span className="text-slate-800 leading-relaxed line-clamp-2">{content.cause || content.problem}</span>
+              <span className="text-slate-800 leading-relaxed line-clamp-2" dangerouslySetInnerHTML={{ __html: content.cause || content.problem }} />
             </li>
             <li className="flex items-start gap-2">
               <span className="text-indigo-600 font-bold shrink-0">🚀 핵심 해결책:</span>
-              <span className="text-slate-800 leading-relaxed line-clamp-2">{Array.isArray(content.solution) ? content.solution[0] : content.solution}</span>
+              <span className="text-slate-800 leading-relaxed line-clamp-2" dangerouslySetInnerHTML={{ __html: Array.isArray(content.solution) ? content.solution[0] : content.solution }} />
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-600 font-bold shrink-0">✨ 기대 효과:</span>
@@ -182,12 +200,12 @@ export default function PostDetail() {
               <h3 className="text-lg font-bold text-red-600 flex items-center gap-2 mb-3">
                 <span>🚨</span> 문제 상황
               </h3>
-              <p className="mb-6 text-slate-600 leading-relaxed">{content.problem}</p>
+              <p className="mb-6 text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: content.problem }} />
               
               <h3 className="text-lg font-bold text-indigo-600 flex items-center gap-2 mb-3">
                 <span>🔍</span> 원인 분석
               </h3>
-              <p className="text-slate-600 leading-relaxed">{content.cause}</p>
+              <p className="text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: content.cause }} />
             </div>
           </section>
 
@@ -203,10 +221,10 @@ export default function PostDetail() {
                   <span className="flex items-center justify-center bg-slate-100 text-indigo-600 font-extrabold w-10 h-10 rounded-full shrink-0 text-lg">
                     {idx + 1}
                   </span>
-                  <p className="mt-1 md:mt-2 font-medium text-slate-700 leading-relaxed">{step}</p>
+                  <div className="mt-1 md:mt-2 font-medium text-slate-700 leading-relaxed w-full" dangerouslySetInnerHTML={{ __html: step }} />
                 </div>
               )) : (
-                <p className="bg-white p-6 rounded-2xl shadow-md">{content.solution}</p>
+                <div className="bg-white p-6 rounded-2xl shadow-md w-full" dangerouslySetInnerHTML={{ __html: content.solution }} />
               )}
             </div>
           </section>
@@ -241,9 +259,7 @@ export default function PostDetail() {
             <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 md:p-8 rounded-2xl border border-yellow-200/50 shadow-md">
               <div className="flex gap-4 items-start">
                 <span className="text-3xl">💡</span>
-                <p className="font-semibold text-slate-800 leading-loose">
-                  {content.tips}
-                </p>
+                <div className="font-semibold text-slate-800 leading-loose w-full" dangerouslySetInnerHTML={{ __html: content.tips }} />
               </div>
             </div>
           </section>
@@ -316,7 +332,13 @@ export default function PostDetail() {
                 <Link key={rp.id} to={`/post/${rp.slug}`} onClick={() => window.scrollTo(0,0)} className="group block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
                   {rp.thumbnailUrl ? (
                     <div className="w-full aspect-[4/3] overflow-hidden">
-                      <img src={rp.thumbnailUrl} alt={rp.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                      <img 
+                        src={rp.thumbnailUrl} 
+                        alt={rp.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                        loading="lazy" 
+                        decoding="async" 
+                      />
                     </div>
                   ) : (
                     <div className="w-full aspect-[4/3] bg-slate-100 flex items-center justify-center text-slate-300">No Image</div>

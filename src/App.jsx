@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Category from './pages/Category';
 import PostDetail from './pages/PostDetail';
 import Admin from './pages/Admin';
+import PolicyPage from './pages/PolicyPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/category/:categoryId" element={<Category />} />
           <Route path="/post/:slug" element={<PostDetail />} />
+          <Route path="/policy/:type" element={<PolicyPage />} />
           <Route path="/secret-hub" element={<Admin />} />
         </Routes>
       </div>
@@ -25,8 +27,17 @@ function App() {
           <div className="text-3xl mb-2">🌿</div>
           <h3 className="text-lg font-bold text-slate-800 tracking-tight">LifeHub</h3>
         </div>
+        
+        {/* Trust Pages Links for AdSense */}
+        <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-6 text-slate-600 font-semibold">
+          <Link to="/policy/about" className="hover:text-indigo-600 transition">About Us</Link>
+          <Link to="/policy/contact" className="hover:text-indigo-600 transition">Contact Us</Link>
+          <Link to="/policy/privacy" className="hover:text-indigo-600 transition">Privacy Policy</Link>
+          <Link to="/policy/terms" className="hover:text-indigo-600 transition">Terms of Service</Link>
+        </div>
+
         <p>© {new Date().getFullYear()} LifeHub. 당신의 일상을 이롭게 하는 기온별 코디와 생활 정보 허브.</p>
-        <div className="mt-2 text-xs text-slate-400 flex items-center justify-center gap-4">
+        <div className="mt-4 text-xs text-slate-400 flex items-center justify-center gap-4">
           <span>Powered by React Router & Open-Meteo</span>
         </div>
       </footer>
