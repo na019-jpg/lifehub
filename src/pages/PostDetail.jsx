@@ -119,7 +119,7 @@ export default function PostDetail() {
         </div>
 
         {/* 체계적인 본문 시작 */}
-        <div className="prose prose-lg prose-slate max-w-none text-slate-800 space-y-16">
+        <div className="prose prose-base md:prose-lg prose-slate max-w-none text-slate-800 prose-p:text-[16px] prose-p:leading-[1.7] md:prose-p:text-[18px] md:prose-p:leading-[1.8] space-y-16 md:space-y-20">
 
           {/* 1. 발생 원인 및 문제점 */}
           <section className="scroll-mt-24">
@@ -246,7 +246,7 @@ export default function PostDetail() {
               href={content.recommendation.url} 
               target="_blank" 
               rel="noreferrer noopener"
-              className="flex-1 md:flex-none text-center bg-indigo-600 text-white font-bold text-base px-6 py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 animate-[pulse_2s_infinite]"
+              className="flex-1 md:flex-none text-center bg-indigo-600 text-white font-black text-[17px] md:text-lg px-6 py-4 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 animate-[pulse_2s_infinite]"
             >
               🚀 최저가 확인하기
             </a>
