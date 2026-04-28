@@ -21,12 +21,45 @@ export default function PostDetail() {
 
   const { content } = post; // new structured content
 
+  // Generate JSON-LD Schema
+  const schemaObj = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": post.title,
+      "image": post.thumbnailUrl ? [post.thumbnailUrl] : [],
+      "datePublished": post.date,
+      "dateModified": post.date,
+      "author": {
+        "@type": "Person",
+        "name": "Editor"
+      },
+      "description": post.summary
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": post.title,
+      "description": post.summary,
+      "step": Array.isArray(content.solution) 
+        ? content.solution.map((stepText) => ({
+            "@type": "HowToStep",
+            "text": stepText
+          }))
+        : [{
+            "@type": "HowToStep",
+            "text": content.solution
+          }]
+    }
+  ];
+
   return (
     <article className="bg-white min-h-screen">
       <SeoHelmet 
         title={post.title} 
         description={post.summary} 
         keywords="청소, 생활꿀팁, 세탁, 최저가"
+        schema={schemaObj}
       />
 
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
@@ -60,77 +93,134 @@ export default function PostDetail() {
           </figure>
         )}
 
-        {/* Summary */}
-        <div className="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-xl mb-10">
-          <p className="text-lg text-slate-700 font-medium leading-relaxed">
+        {/* AI Summary Box (AEO Optimization) */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-2xl mb-12 shadow-md relative overflow-hidden">
+          <div className="flex items-center gap-2 mb-4 relative z-10">
+            <span className="text-2xl">💡</span>
+            <h2 id="ai-summary" className="text-xl md:text-2xl font-black text-indigo-900">AI 핵심 요약 (Quick Answer)</h2>
+          </div>
+          <p className="text-slate-700 font-medium mb-4 relative z-10">
             {post.summary}
           </p>
+          <ul className="space-y-3 relative z-10 bg-white/60 p-5 rounded-xl border border-white/80">
+            <li className="flex items-start gap-2">
+              <span className="text-red-500 font-bold shrink-0">🎯 문제/원인:</span>
+              <span className="text-slate-800 leading-relaxed line-clamp-2">{content.cause || content.problem}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-indigo-600 font-bold shrink-0">🚀 핵심 해결책:</span>
+              <span className="text-slate-800 leading-relaxed line-clamp-2">{Array.isArray(content.solution) ? content.solution[0] : content.solution}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 font-bold shrink-0">✨ 기대 효과:</span>
+              <span className="text-slate-800 leading-relaxed line-clamp-2">{content.conclusion}</span>
+            </li>
+          </ul>
         </div>
 
         {/* 체계적인 본문 시작 */}
-        <div className="prose prose-lg prose-slate max-w-none text-slate-800 space-y-12">
+        <div className="prose prose-lg prose-slate max-w-none text-slate-800 space-y-16">
 
-          <section>
-            <h2 className="text-2xl font-bold border-b-2 border-slate-800 pb-2 mb-4 inline-block">1. 발생 원인 및 문제점</h2>
-            <div className="bg-white border border-slate-200 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-slate-800 mb-2">🚨 문제 상황</h3>
-              <p className="mb-4">{content.problem}</p>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">🔍 원인 분석</h3>
-              <p>{content.cause}</p>
+          {/* 1. 발생 원인 및 문제점 */}
+          <section className="scroll-mt-24">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">1</span>
+              <h2 className="text-2xl font-extrabold text-slate-900 m-0">발생 원인 및 문제점</h2>
+            </div>
+            <div className="bg-white border border-slate-100 shadow-lg shadow-slate-200/40 rounded-2xl p-6 md:p-8 transition hover:shadow-xl">
+              <h3 className="text-lg font-bold text-red-600 flex items-center gap-2 mb-3">
+                <span>🚨</span> 문제 상황
+              </h3>
+              <p className="mb-6 text-slate-600 leading-relaxed">{content.problem}</p>
+              
+              <h3 className="text-lg font-bold text-indigo-600 flex items-center gap-2 mb-3">
+                <span>🔍</span> 원인 분석
+              </h3>
+              <p className="text-slate-600 leading-relaxed">{content.cause}</p>
             </div>
           </section>
 
-          <section>
-            <h2 className="text-2xl font-bold border-b-2 border-slate-800 pb-2 mb-4 inline-block">2. 단계별 해결 방법</h2>
+          {/* 2. 단계별 해결 방법 */}
+          <section className="scroll-mt-24">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">2</span>
+              <h2 className="text-2xl font-extrabold text-slate-900 m-0">단계별 해결 방법</h2>
+            </div>
             <div className="space-y-4">
               {Array.isArray(content.solution) ? content.solution.map((step, idx) => (
-                <div key={idx} className="flex gap-4 items-start bg-slate-50 p-4 rounded-xl">
-                  <span className="flex items-center justify-center bg-slate-800 text-white font-black w-8 h-8 rounded-full shrink-0">
+                <div key={idx} className="flex gap-4 items-start bg-white border border-slate-100 shadow-md shadow-slate-200/30 p-5 rounded-2xl hover:-translate-y-1 transition transform duration-300">
+                  <span className="flex items-center justify-center bg-slate-100 text-indigo-600 font-extrabold w-10 h-10 rounded-full shrink-0 text-lg">
                     {idx + 1}
                   </span>
-                  <p className="mt-1 font-medium">{step}</p>
+                  <p className="mt-1 md:mt-2 font-medium text-slate-700 leading-relaxed">{step}</p>
                 </div>
               )) : (
-                <p>{content.solution}</p>
+                <p className="bg-white p-6 rounded-2xl shadow-md">{content.solution}</p>
               )}
             </div>
           </section>
 
           {/* Ad 2: 본문 중간 */}
-          <div className="my-8 py-4 border-y border-slate-100">
+          <div className="my-10 py-6 border-y border-slate-100 flex justify-center">
             <AdPlaceholder position="본문 중간 매치드 콘텐츠 광고" />
           </div>
 
-          <section>
-            <h2 className="text-2xl font-bold border-b-2 border-slate-800 pb-2 mb-4 inline-block">3. 에디터 추가 꿀팁</h2>
-            <p className="bg-yellow-50 text-yellow-900 p-5 rounded-xl border border-yellow-200 font-medium">
-              💡 {content.tips}
-            </p>
+          {/* 3. 에디터 추가 꿀팁 */}
+          <section className="scroll-mt-24">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">3</span>
+              <h2 className="text-2xl font-extrabold text-slate-900 m-0">에디터 추가 꿀팁</h2>
+            </div>
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 md:p-8 rounded-2xl border border-yellow-200/50 shadow-md">
+              <div className="flex gap-4 items-start">
+                <span className="text-3xl">💡</span>
+                <p className="font-semibold text-slate-800 leading-loose">
+                  {content.tips}
+                </p>
+              </div>
+            </div>
           </section>
 
-          <section>
-            <h2 className="text-2xl font-bold border-b-2 border-slate-800 pb-2 mb-4 inline-block">4. 요약 정리</h2>
-            <p className="text-lg font-bold text-slate-700 bg-slate-50 p-6 rounded-xl text-center">
+          {/* 4. 요약 정리 */}
+          <section className="scroll-mt-24">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">4</span>
+              <h2 className="text-2xl font-extrabold text-slate-900 m-0">요약 정리</h2>
+            </div>
+            <p className="text-xl font-bold text-slate-800 bg-slate-100/80 p-8 rounded-3xl text-center shadow-inner leading-loose">
               " {content.conclusion} "
             </p>
           </section>
 
           {/* Recommendation CTA */}
           {content.recommendation && content.recommendation.url && (
-            <section className="mt-12 mb-8 bg-blue-50 border border-blue-100 rounded-2xl p-6 text-center shadow-sm">
-              <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-3">🔥 에디터 추천템</span>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">{content.recommendation.name}</h3>
-              <p className="text-slate-500 mb-6 font-medium">역대급 세일 진행 중! 예상 판매가: {content.recommendation.price}</p>
+            <section className="mt-16 mb-8 relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl shadow-indigo-200/50">
+              <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+              
+              <span className="relative z-10 inline-block bg-white/20 backdrop-blur-md text-white border border-white/30 font-bold px-4 py-1.5 rounded-full mb-4 text-sm tracking-wide">
+                🔥 에디터 추천 최저가 아이템
+              </span>
+              
+              <h3 className="relative z-10 text-2xl md:text-3xl font-black text-white mb-3 drop-shadow-md">
+                {content.recommendation.name}
+              </h3>
+              
+              <p className="relative z-10 text-indigo-100 mb-8 font-medium text-lg">
+                역대급 할인 적용가: <strong className="text-yellow-300 text-2xl">{content.recommendation.price}</strong>
+              </p>
+              
               <a 
                 href={content.recommendation.url} 
                 target="_blank" 
                 rel="noreferrer noopener"
-                className="inline-block bg-blue-600 text-white font-black text-lg px-8 py-4 rounded-xl hover:bg-blue-700 transition transform hover:-translate-y-1 shadow-lg w-full md:w-auto"
+                className="relative z-10 inline-flex items-center justify-center bg-white text-indigo-600 font-black text-lg px-8 py-4 rounded-xl hover:bg-slate-50 transition transform hover:-translate-y-1 shadow-lg w-full md:w-auto overflow-hidden group"
               >
-                👉 최저가 확인하기
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                👉 자세히 알아보기
               </a>
-              <p className="text-xs text-slate-400 mt-4">
-                {post.monetization?.affiliate_note || "이 포스팅은 제휴 마케팅이 포함되어 있으며, 이에 따른 일정액의 수수료를 제공받습니다."}
+              
+              <p className="relative z-10 text-xs text-white/60 mt-6 pt-4 border-t border-white/20">
+                {post.monetization?.affiliate_note || "이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."}
               </p>
             </section>
           )}
@@ -138,11 +228,32 @@ export default function PostDetail() {
         </div>
 
         {/* Ad 3: 본문 하단 */}
-        <div className="mt-12 border-t border-slate-200 pt-8">
+        <div className="mt-16 border-t border-slate-200 pt-10 flex justify-center">
           <AdPlaceholder position="본문 하단 추천 위젯형 광고" />
         </div>
 
       </div>
+
+      {/* Sticky Bottom CTA for Mobile & Desktop */}
+      {content.recommendation && content.recommendation.url && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/80 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 transform transition-transform duration-300">
+          <div className="container mx-auto max-w-3xl flex items-center justify-between gap-4">
+            <div className="hidden md:block flex-1 min-w-0">
+              <p className="text-xs text-indigo-600 font-bold mb-0.5">🔥 지금 할인 중</p>
+              <p className="text-sm font-bold text-slate-900 truncate">{content.recommendation.name}</p>
+            </div>
+            <a 
+              href={content.recommendation.url} 
+              target="_blank" 
+              rel="noreferrer noopener"
+              className="flex-1 md:flex-none text-center bg-indigo-600 text-white font-bold text-base px-6 py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 animate-[pulse_2s_infinite]"
+            >
+              🚀 최저가 확인하기
+            </a>
+          </div>
+        </div>
+      )}
+
     </article>
   );
 }

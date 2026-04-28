@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lifestyle-hub.co.kr/sitemap.xml
