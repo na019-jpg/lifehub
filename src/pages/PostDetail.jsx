@@ -45,9 +45,16 @@ export default function PostDetail() {
   };
 
   // 3. Related Posts
-  const relatedPosts = data.posts
+  let relatedPosts = data.posts
     .filter(p => p.categoryId === post?.categoryId && p.id !== post?.id)
     .slice(0, 3);
+
+  // 같은 카테고리에 다른 글이 아직 없다면, 카테고리 상관없이 최신 글을 추천합니다.
+  if (relatedPosts.length === 0) {
+    relatedPosts = data.posts
+      .filter(p => p.id !== post?.id)
+      .slice(0, 3);
+  }
 
   if (!post) {
     return (
