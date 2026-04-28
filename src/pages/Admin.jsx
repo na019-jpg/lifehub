@@ -10,6 +10,21 @@ export default function Admin() {
   // Tabs State: 'write', 'manage', or 'analytics'
   const [activeTab, setActiveTab] = useState('write');
   
+  // Looker Studio State
+  const [lookerUrl, setLookerUrl] = useState(localStorage.getItem('looker_studio_url') || '');
+  const [tempLookerUrl, setTempLookerUrl] = useState('');
+
+  const saveLookerUrl = () => {
+    localStorage.setItem('looker_studio_url', tempLookerUrl);
+    setLookerUrl(tempLookerUrl);
+  };
+
+  const resetLookerUrl = () => {
+    localStorage.removeItem('looker_studio_url');
+    setLookerUrl('');
+    setTempLookerUrl('');
+  };
+  
   // Edit State
   const [editingPostId, setEditingPostId] = useState(null);
 
@@ -265,80 +280,66 @@ export default function Admin() {
 
       {activeTab === 'analytics' && (
         <section className="space-y-6 animate-fade-in">
-          <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm font-bold flex items-center justify-between border border-blue-100">
-            <span>ℹ️ 현재 표시되는 데이터는 Google Analytics API 연동 전의 데모 UI(UI 테스트용) 데이터입니다.</span>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs hover:bg-blue-700 shadow-sm transition">구글 애널리틱스 연동 (준비 중)</button>
-          </div>
+          {!lookerUrl ? (
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm max-w-2xl mx-auto">
+              <h2 className="text-2xl font-black text-slate-800 mb-4 flex items-center gap-2">📊 구글 루커 스튜디오 연결</h2>
+              <p className="text-slate-600 mb-6 leading-relaxed">
+                구글 애널리틱스 데이터를 예쁜 차트로 보여주는 <b>Looker Studio 임베드(Embed) 링크</b>를 입력해 주세요.<br/>
+                복잡한 서버 설정 없이 가장 안전하고 확실하게 데이터를 연동할 수 있습니다.
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">루커 스튜디오 임베드 URL (src 값)</label>
+                  <input 
+                    type="url" 
+                    value={tempLookerUrl} 
+                    onChange={e => setTempLookerUrl(e.target.value)} 
+                    placeholder="https://lookerstudio.google.com/embed/reporting/..." 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                  />
+                </div>
+                <button 
+                  onClick={saveLookerUrl}
+                  disabled={!tempLookerUrl}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl transition"
+                >
+                  🔗 대시보드 연결하기
+                </button>
+              </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm hover:shadow-md transition">
-              <div className="text-slate-500 font-bold text-sm mb-1">오늘 방문자 (Today)</div>
-              <div className="text-3xl font-black text-slate-800">1,284 <span className="text-sm text-emerald-500 ml-1">↑ 12%</span></div>
-            </div>
-            <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm hover:shadow-md transition">
-              <div className="text-slate-500 font-bold text-sm mb-1">이번 달 누적 (Month)</div>
-              <div className="text-3xl font-black text-slate-800">45,920</div>
-            </div>
-            <div className="bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-6 rounded-3xl shadow-sm">
-              <div className="text-indigo-100 font-bold text-sm mb-1">발행된 포스팅</div>
-              <div className="text-3xl font-black">{data.posts.length} 건</div>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6 rounded-3xl shadow-sm">
-              <div className="text-slate-300 font-bold text-sm mb-1">애드센스 예상 수익</div>
-              <div className="text-3xl font-black text-yellow-400">$ 142.50</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Top Posts */}
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-              <h3 className="text-lg font-black text-slate-800 mb-5 flex items-center gap-2">🏆 인기 콘텐츠 TOP 5</h3>
-              <div className="space-y-3">
-                {[...data.posts]
-                  .map((p, i) => ({ ...p, views: Math.floor(Math.random() * 5000) + 1000 - (i * 200) }))
-                  .sort((a,b) => b.views - a.views)
-                  .slice(0, 5)
-                  .map((post, idx) => (
-                  <div key={post.id} className="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition cursor-pointer border border-transparent hover:border-slate-100">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-base shadow-sm ${idx === 0 ? 'bg-yellow-100 text-yellow-700' : idx === 1 ? 'bg-slate-200 text-slate-600' : idx === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-50 text-slate-400'}`}>
-                      {idx + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-slate-800 truncate">{post.title}</h4>
-                      <div className="text-xs font-bold text-slate-400 mt-1 uppercase">{data.categories.find(c => c.id === post.categoryId)?.name} • {post.date || '최근'}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-black text-slate-800 text-lg">{post.views.toLocaleString()}</div>
-                      <div className="text-[10px] text-slate-400 font-bold">Views</div>
-                    </div>
-                  </div>
-                ))}
+              <div className="mt-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 text-sm">
+                <h3 className="font-black text-slate-800 mb-3 text-base">💡 임베드 링크 가져오는 방법 (초간단 1분 컷)</h3>
+                <ol className="list-decimal list-inside space-y-2 text-slate-700 font-medium">
+                  <li><a href="https://lookerstudio.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 font-bold hover:underline">Looker Studio</a>에 접속하여 빈 보고서를 만듭니다.</li>
+                  <li>데이터 소스로 <b>Google Analytics</b>를 선택하고 방금 만든 사이트 속성을 연결합니다.</li>
+                  <li>차트 추가 버튼을 눌러 원하는 통계(방문자 수 등)를 자유롭게 그립니다.</li>
+                  <li>우측 상단의 <b>[공유] ▼ ➔ [보고서 삽입(Embed report)]</b>을 클릭합니다.</li>
+                  <li><b>'삽입 URL(Embed URL)'</b>을 선택하고 나오는 주소를 복사해서 위 칸에 붙여넣습니다.</li>
+                </ol>
               </div>
             </div>
-
-            {/* Traffic Sources Mock */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col">
-              <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">📱 주요 유입 경로 비율</h3>
-              <div className="flex-1 flex flex-col justify-center gap-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-bold text-slate-700"><span>Google 검색</span><span className="text-blue-600">65%</span></div>
-                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div className="bg-blue-500 h-full rounded-full" style={{width: '65%'}}></div></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-bold text-slate-700"><span>직접 유입 / 북마크</span><span className="text-indigo-600">20%</span></div>
-                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div className="bg-indigo-500 h-full rounded-full" style={{width: '20%'}}></div></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-bold text-slate-700"><span>네이버 / 다음</span><span className="text-emerald-600">10%</span></div>
-                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div className="bg-emerald-500 h-full rounded-full" style={{width: '10%'}}></div></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-bold text-slate-700"><span>SNS (카카오톡 등)</span><span className="text-yellow-600">5%</span></div>
-                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden"><div className="bg-yellow-400 h-full rounded-full" style={{width: '5%'}}></div></div>
-                </div>
+          ) : (
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col h-[800px]">
+              <div className="flex justify-between items-center mb-4 shrink-0">
+                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">📊 실시간 애널리틱스 대시보드</h2>
+                <button onClick={resetLookerUrl} className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold px-4 py-2 rounded-lg transition">
+                  링크 변경
+                </button>
+              </div>
+              <div className="flex-1 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
+                <iframe 
+                  src={lookerUrl} 
+                  width="100%" 
+                  height="100%" 
+                  frameBorder="0" 
+                  style={{ border: 0 }} 
+                  allowFullScreen 
+                  sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                ></iframe>
               </div>
             </div>
-          </div>
+          )}
         </section>
       )}
 
