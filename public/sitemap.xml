@@ -6,47 +6,42 @@
     <priority>1</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/clean</loc>
+    <loc>https://lifestyle-hub.co.kr/category/clothing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/laundry</loc>
+    <loc>https://lifestyle-hub.co.kr/category/food</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/cook</loc>
+    <loc>https://lifestyle-hub.co.kr/category/housing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/organize</loc>
+    <loc>https://lifestyle-hub.co.kr/category/health</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/maintenance</loc>
+    <loc>https://lifestyle-hub.co.kr/category/economy</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/hygiene</loc>
+    <loc>https://lifestyle-hub.co.kr/category/digital</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/efficiency</loc>
+    <loc>https://lifestyle-hub.co.kr/category/travel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/troubleshoot</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://lifestyle-hub.co.kr/category/lifehack</loc>
+    <loc>https://lifestyle-hub.co.kr/category/pets</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

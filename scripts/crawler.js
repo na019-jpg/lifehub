@@ -15,16 +15,24 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // 구글 최신 플래시 모델 적용
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-// 100가지 생활 꿀팁 생성용 무작위 키워드 풀 (계속 추가 가능)
+// 8대 카테고리 분야 전반을 다루는 100+ 꿀팁 키워드 풀
 const LIFESTYLE_KEYWORDS = [
-  "도마 김칫국물 제거", "수건 쉰내 제거", "화장실 거울 물때", "스텐 냄비 연마제", 
-  "싱크대 배수구 악취", "세탁기 통세척 방법", "옷에 묻은 커피 얼룩", "베개솜 세탁법",
-  "프라이팬 기름때 분해", "운동화 냄새 제거", "욕실 바닥 곰팡이", "창틀 먼지 청소",
-  "누렇게 변한 흰티 복원", "니트 보풀 제거", "셔츠 목때 제거", "냉장고 김치냄새 탈취",
-  "여름철 초파리 퇴치", "가죽 소파 얼룩 닦기", "전자레인지 찌든때", "에어컨 필터 청소",
-  "러그 먼지 제거", "빨래 쉰내 해결법", "샤워기 헤드 물때 제거", "탄 냄비 복구법",
-  "반찬통 냄새 제거", "검은옷 먼지 제거", "구겨진 옷 펴는 법", "스티커 끈끈이 지우기",
-  "매트리스 진드기 차단", "패딩 숨 죽은거 살리기"
+  // 의생활
+  "누런 면티 하얗게 만들기", "니트 보풀 제거 꿀팁", "겨울 패딩 세탁 및 보관법", "옷에 묻은 커피 얼룩 제거", "청바지 물빠짐 방지",
+  // 식생활
+  "대파 오랫동안 보관하는 법", "냉동 삼겹살 해동 꿀팁", "프라이팬 기름때 완벽 제거", "전자레인지로 밥 데우는 최적의 방법", "스텐 냄비 연마제 제거",
+  // 주거
+  "화장실 곰팡이 재발 방지", "실리콘 곰팡이 완벽 제거", "창틀 먼지 신문지 청소법", "배수구 냄새 차단법", "집개미 퇴치법",
+  // 건강
+  "불면증 해결 수면 환경", "스마트폰 거북목 스트레칭", "가정용 구급함 필수 리스트", "환절기 면역력 루틴", "디지털 디톡스 실천법",
+  // 경제
+  "사회초년생 연말정산 꿀팁", "안 쓰는 구독 서비스 정리", "숨은 카드 포인트 찾기", "청년 주거 지원 혜택", "알뜰 교통카드 활용법",
+  // 디지털
+  "스마트폰 용량 정리", "PC 속도 느려질 때 해결법", "안전한 비밀번호 관리", "카카오톡 꿀기능 5가지", "피싱 문자 대처법",
+  // 여행
+  "해외여행 짐싸기 체크리스트", "비행기표 싸게 예매하는 법", "겨울철 자동차 배터리 관리", "여행자 보험 필수 체크", "장거리 운전 피로 회복",
+  // 반려
+  "강아지 노령기 케어 꿀팁", "고양이 스크래쳐 고르는 법", "초보자용 공기정화 식물", "화초 분갈이 시기와 방법", "반려동물 금기 식물"
 ];
 
 // 타겟 개수
@@ -38,35 +46,35 @@ function getRandomKeywords(count) {
 
 async function generateStructuredContent(keyword) {
   const prompt = `
-당신은 트래픽을 유도하고 제휴 마케팅 수익을 창출하는 '수익형 블로그 탑티어 에디터'입니다.
+당신은 트래픽을 유도하고 제휴 마케팅 수익을 창출하는 '수익형 라이프스타일 매거진 에디터'입니다.
 다음 키워드에 맞춰서 엄청나게 유익하고 구체적인 블로그 포스트 데이터를 처음부터 끝까지 창작해주세요: "${keyword}"
 
 현재 사이트는 다음 카테고리 트리 구조를 사용합니다 (반드시 이 표에 있는 Main Category 영문 ID와 서브카테고리 한글명 중 딱 1개씩만 골라야 합니다):
 
-1. 청소(clean) - 주방, 욕실, 거실, 침실, 베란다/창문, 유리/거울, 스테인리스, 나무/원목, 플라스틱, 패브릭/천, 기름때, 물때/석회, 곰팡이, 음식 얼룩, 냄새 제거, 천연 세제, 상업용 세제, 청소도구, 일일 청소, 주간 청소, 계절 대청소
-2. 세탁(laundry) - 면/폴리에스터, 니트/울, 데님, 기능성 의류, 속옷/양말, 손세탁, 세탁기 사용법, 온수/냉수 선택, 건조 방법, 기름 얼룩, 커피/와인, 피/땀, 잉크, 옷 줄이기/늘어나기 방지, 탈색 방지, 계절 보관
-3. 요리(cook) - 삶기/찌기, 굽기/볶기, 튀기기, 끓이기, 채소, 육류, 생선/해산물, 계란/두부, 국/찌개, 반찬, 면 요리, 간단 한끼, 칼질, 불 조절, 간 맞추기, 냉장/냉동 보관, 유통기한 판단, 해동 방법
-4. 정리·수납(organize) - 옷장, 주방 수납, 냉장고 정리, 책상/서류, 미니멀리즘, 카테고리 정리, 동선 기반 정리, 재정리 주기, 물건 줄이기 기준
-5. 생활 유지관리(maintenance) - 냉장고 관리, 세탁기 관리, 에어컨 관리, 전자레인지 관리, 필터 교체, 배터리, 전구, 배수구 막힘, 문/경첩 문제, 실리콘 보수
-6. 위생·건강(hygiene) - 손 씻기, 구강 관리, 피부 관리, 침구 관리, 수건 관리, 공기질 관리
-7. 절약·효율(efficiency) - 전기/수도 절약, 식비 절약, 루틴화, 자동화
-8. 문제 해결(troubleshoot) - 음식 냄새, 하수구 냄새, 벌레, 곰팡이 재발, 얼룩 즉시 제거, 음식 상함 대응
-9. 생활 노하우(lifehack) - 베이킹소다 활용, 식초 활용, 빠른 청소법, 즉석 요리법
+1. 의생활 및 의류 관리(clothing) - 세탁 전문 기술, 수선 및 리폼, 의류 보관, 구매 및 스타일링
+2. 식생활 및 주방 관리(food) - 식재료 아카이브, 주방 위생, 식비 절약, 조리 도구
+3. 주거 및 홈케어(housing) - 청소의 정석, 셀프 집수리, 해충 및 방역, 공간 효율화
+4. 건강 및 라이프 케어(health) - 상비약 및 응급처치, 수면 공학, 홈 트레이닝, 멘탈 케어
+5. 경제 및 행정(economy) - 정부 혜택 알림, 세금 및 서류, 스마트 금융, 소비 방어
+6. 디지털 및 IT 활용(digital) - 기기 관리, 보안 및 개인정보, 생산성 툴, 디지털 에티켓
+7. 여행 및 모빌리티(travel) - 스마트 여행, 차량 관리, 대중교통 활용
+8. 반려 생활 및 식물(pets) - 반려동물, 플랜테리어
+
 [필수 작성 가이드라인]
 1. 분량: 모든 텍스트를 합쳐서 공백 제외 최소 1,200자 이상으로 매우 상세하게 작성하세요. 대충 넘기지 말고 구체적인 수치, 이유, 원리를 꽉 꽉 채워주세요.
-2. 문체: AI 느낌이 전혀 나지 않도록 친근하고 호소력 짙은 30대 주부 블로거 구어체를 사용하세요 ("~했어요", "~랍니다", "진짜 신기하죠?"). 
+2. 문체: AI 느낌이 전혀 나지 않도록 친근하고 호소력 짙은 전문 에디터 구어체를 사용하세요 ("~했어요", "~랍니다", "진짜 신기하죠?"). 
 3. 필수 내용: '실제 경험담(내가 겪었던 고충과 해결했을 때의 쾌감)'과 '전문가적 조언(왜 이 방법이 과학적으로 통하는지)'을 본문에 반드시 녹여내세요.
 4. 서식: 본문의 가독성을 극대화하기 위해 각 항목의 텍스트 안에 HTML 태그(<br>, <strong>, <h3>)를 자유롭게 섞어서 작성하세요. (단, JSON 구조는 깨뜨리지 말 것)
 
 응답은 구글 검색 1위를 할 수 있도록 풍부하고 가독성 높게 작성해야 하며, 반드시 다음 JSON 형식에 정확히 맞춰서 반환하세요.
 **반드시 \`categoryId\`와 위 표에 있는 정확한 \`subcategory\` 문자열을 선택해 응답에 포함시켜야 합니다.**
 
-키워드: "\${keyword}"
+키워드: "${keyword}"
 
 {
   "title": "클릭을 유도하는 매력적이고 자극적인 15자 내외 제목",
   "summary": "1~2문장의 핵심 요약 (구글 스니펫용)",
-  "categoryId": "clean, laundry, cook, organize, maintenance, hygiene, efficiency, troubleshoot, lifehack 중 가장 적합한 1개 영문 ID",
+  "categoryId": "clothing, food, housing, health, economy, digital, travel, pets 중 가장 적합한 1개 영문 ID",
   "subcategory": "위에서 선택한 카테고리에 속한 정확한 한글 서브카테고리 이름 1개",
   "problem": "이 문제가 발생하는 일반적인 상황 (공감 유발 경험담 포함하여 300자 이상. <br> 태그 등 사용)",
   "cause": "이 문제가 생기는 과학적/물리적 원인과 전문가적 조언 (300자 이상)",
@@ -78,11 +86,11 @@ async function generateStructuredContent(keyword) {
   "tips": "<strong>에디터의 특급 꿀팁!</strong><br>추가로 알면 좋은 노하우나 주의사항 (200자 이상)",
   "conclusion": "전체 과정을 요약하는 1~2문장 마무리",
   "recommendation": {
-    "name": "이 문제를 해결하는 데 도움이 되는 추천 상품명 (예: 과탄산소다 1kg, 곰팡이 제거젤)",
+    "name": "이 문제를 해결하는 데 도움이 되는 추천 상품명",
     "price": "예상 가격 (예: 12,000원 대)"
   }
 }
-\`;
+`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -98,7 +106,7 @@ async function generateStructuredContent(keyword) {
 }
 
 async function startAutoGeneration() {
-  console.log(`🤖 AI 꿀팁 무한 생성기 가동 (오늘의 키워드 뽑기 완료)`);
+  console.log(`🤖 AI 라이프스타일 매거진 포스팅 생성기 가동`);
   
   const keywords = getRandomKeywords(POSTS_TO_GENERATE);
   const drafts = [];
@@ -110,31 +118,14 @@ async function startAutoGeneration() {
     const structuredData = await generateStructuredContent(keyword);
 
     if (structuredData) {
-      // 카테고리별 무료 고화질 스톡 이미지 호스팅 URL 자동 할당 (LoremFlickr)
-      const categoryKeywordMap = {
-        'clean': 'cleaning,house',
-        'laundry': 'laundry,washing',
-        'cook': 'cooking,kitchen,food',
-        'organize': 'organization,minimalist,box',
-        'maintenance': 'repair,tools,home',
-        'hygiene': 'hygiene,health,bathroom',
-        'efficiency': 'clock,routine,money',
-        'troubleshoot': 'problem,fix,care',
-        'lifehack': 'tip,idea,creative'
-      };
-      
-      const searchKeyword = categoryKeywordMap[structuredData.categoryId] || 'home,tips';
-      // 브라우저 캐시 방지를 위해 고유 lock 번호 부여
-      const autoThumbnail = `https://loremflickr.com/800/600/${searchKeyword}?lock=${Date.now() + i}`;
-
       drafts.push({
         id: `draft-${Date.now()}-${i}`,
         title: structuredData.title,
         summary: structuredData.summary,
         categoryId: structuredData.categoryId,
         subcategory: structuredData.subcategory,
-        tags: `${keyword.replace(/\s+/g, ', ')}, 생활노하우`,
-        thumbnailUrl: autoThumbnail,
+        tags: `${keyword.replace(/\s+/g, ', ')}, 라이프스타일`,
+        // thumbnailUrl 삭제됨
         content: {
           problem: structuredData.problem,
           cause: structuredData.cause,
@@ -143,7 +134,7 @@ async function startAutoGeneration() {
           conclusion: structuredData.conclusion,
           recommendation: {
             name: structuredData.recommendation?.name || "추천 상품을 입력하세요",
-            url: "", // 사용자가 직접 링크를 붙여넣을 자리
+            url: "", 
             price: structuredData.recommendation?.price || "0원"
           }
         }
