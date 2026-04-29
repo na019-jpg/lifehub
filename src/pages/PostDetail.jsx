@@ -159,11 +159,6 @@ export default function PostDetail() {
           </div>
         </header>
 
-        {/* Ad 1: 제목 아래 */}
-        <div className="my-6">
-          <AdPlaceholder position="상단 스폰서 텍스트 광고" />
-        </div>
-
         {/* Thumbnail */}
         {post.thumbnailUrl && (
           <figure className="mb-10 w-full aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden">
@@ -178,107 +173,105 @@ export default function PostDetail() {
         )}
 
         {/* AI Summary Box (AEO Optimization) */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-2xl mb-12 shadow-md relative overflow-hidden">
-          <div className="flex items-center gap-2 mb-4 relative z-10">
+        <div className="bg-slate-50 border border-slate-200 p-6 md:p-8 rounded-2xl mb-12 shadow-sm relative overflow-hidden">
+          <div className="flex items-center gap-2 mb-5 relative z-10 border-b border-slate-200 pb-3">
             <span className="text-2xl">💡</span>
-            <h2 id="ai-summary" className="text-xl md:text-2xl font-black text-indigo-900">AI 핵심 요약 (Quick Answer)</h2>
+            <h2 id="ai-summary" className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">AI 핵심 요약 (Quick Answer)</h2>
           </div>
-          <p className="text-slate-700 font-medium mb-4 relative z-10">
+          <p className="text-slate-800 font-medium mb-6 relative z-10 text-[16px] md:text-[18px] leading-relaxed">
             {post.summary}
           </p>
-          <ul className="space-y-3 relative z-10 bg-white/60 p-5 rounded-xl border border-white/80">
-            <li className="flex items-start gap-2">
-              <span className="text-red-500 font-bold shrink-0">🎯 문제/원인:</span>
-              <span className="text-slate-800 leading-relaxed line-clamp-2" dangerouslySetInnerHTML={{ __html: content.cause || content.problem }} />
+          <ul className="space-y-4 relative z-10 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+            <li className="flex items-start gap-3">
+              <span className="text-red-500 font-black shrink-0 bg-red-50 px-2 py-0.5 rounded text-sm mt-0.5">원인</span>
+              <span className="text-slate-700 leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: content.cause || content.problem }} />
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-indigo-600 font-bold shrink-0">🚀 핵심 해결책:</span>
-              <span className="text-slate-800 leading-relaxed line-clamp-2" dangerouslySetInnerHTML={{ __html: Array.isArray(content.solution) ? content.solution[0] : content.solution }} />
+            <li className="flex items-start gap-3">
+              <span className="text-indigo-600 font-black shrink-0 bg-indigo-50 px-2 py-0.5 rounded text-sm mt-0.5">해결</span>
+              <span className="text-slate-800 leading-relaxed font-bold" dangerouslySetInnerHTML={{ __html: Array.isArray(content.solution) ? content.solution[0] : content.solution }} />
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold shrink-0">✨ 기대 효과:</span>
-              <span className="text-slate-800 leading-relaxed line-clamp-2">{content.conclusion}</span>
+            <li className="flex items-start gap-3">
+              <span className="text-green-600 font-black shrink-0 bg-green-50 px-2 py-0.5 rounded text-sm mt-0.5">효과</span>
+              <span className="text-slate-700 leading-relaxed font-medium">{content.conclusion}</span>
             </li>
           </ul>
         </div>
 
-        {/* 체계적인 본문 시작 */}
-        <div className="prose prose-base md:prose-lg prose-slate max-w-none text-slate-800 prose-p:text-[16px] prose-p:leading-[1.7] md:prose-p:text-[18px] md:prose-p:leading-[1.8] space-y-16 md:space-y-20">
+        {/* Ad 1: 본문 진입 직전 (위험 클릭 방지를 위해 요약문 아래 배치) */}
+        <div className="my-10">
+          <AdPlaceholder position="본문 상단 광고" />
+        </div>
+
+        {/* 체계적인 본문 시작 - 블로그형 텍스트 스타일링 강화 */}
+        <div className="prose prose-base md:prose-lg prose-slate max-w-none text-[#222222] prose-p:text-[17px] prose-p:leading-[2.0] md:prose-p:text-[19px] md:prose-p:leading-[2.2] space-y-20 md:space-y-24 tracking-[-0.02em]">
 
           {/* 1. 발생 원인 및 문제점 */}
           <section className="scroll-mt-24">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">1</span>
-              <h2 className="text-2xl font-extrabold text-slate-900 m-0">발생 원인 및 문제점</h2>
-            </div>
-            <div className="bg-white border border-slate-100 shadow-lg shadow-slate-200/40 rounded-2xl p-6 md:p-8 transition hover:shadow-xl">
-              <h3 className="text-lg font-bold text-red-600 flex items-center gap-2 mb-3">
-                <span>🚨</span> 문제 상황
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 border-l-8 border-indigo-600 pl-4 mb-8">
+              발생 원인 및 문제점
+            </h2>
+            <div className="px-2 md:px-4">
+              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4 mt-6">
+                <span className="text-red-500">Q.</span> 이런 문제, 왜 생길까요?
               </h3>
-              <p className="mb-6 text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: content.problem }} />
+              <p className="mb-8 bg-red-50/50 p-6 rounded-xl border border-red-100" dangerouslySetInnerHTML={{ __html: content.problem }} />
               
-              <h3 className="text-lg font-bold text-indigo-600 flex items-center gap-2 mb-3">
-                <span>🔍</span> 원인 분석
+              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4 mt-6">
+                <span className="text-indigo-600">A.</span> 정확한 원인은 이렇습니다.
               </h3>
-              <p className="text-slate-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: content.cause }} />
+              <p className="bg-indigo-50/30 p-6 rounded-xl border border-indigo-50" dangerouslySetInnerHTML={{ __html: content.cause }} />
             </div>
           </section>
 
           {/* 2. 단계별 해결 방법 */}
           <section className="scroll-mt-24">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">2</span>
-              <h2 className="text-2xl font-extrabold text-slate-900 m-0">단계별 해결 방법</h2>
-            </div>
-            <div className="space-y-4">
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 border-l-8 border-indigo-600 pl-4 mb-8">
+              실전! 단계별 해결 방법
+            </h2>
+            <div className="space-y-6 px-2 md:px-4">
               {Array.isArray(content.solution) ? content.solution.map((step, idx) => (
-                <div key={idx} className="flex gap-4 items-start bg-white border border-slate-100 shadow-md shadow-slate-200/30 p-5 rounded-2xl hover:-translate-y-1 transition transform duration-300">
-                  <span className="flex items-center justify-center bg-slate-100 text-indigo-600 font-extrabold w-10 h-10 rounded-full shrink-0 text-lg">
+                <div key={idx} className="flex gap-4 items-start bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-2xl hover:border-indigo-300 transition-colors">
+                  <span className="flex items-center justify-center bg-indigo-600 text-white font-extrabold w-10 h-10 rounded-full shrink-0 text-lg shadow-sm mt-1">
                     {idx + 1}
                   </span>
-                  <div className="mt-1 md:mt-2 font-medium text-slate-700 leading-relaxed w-full" dangerouslySetInnerHTML={{ __html: step }} />
+                  <div className="font-medium text-slate-800 leading-[1.9] w-full text-[17px] md:text-[19px]" dangerouslySetInnerHTML={{ __html: step }} />
                 </div>
               )) : (
-                <div className="bg-white p-6 rounded-2xl shadow-md w-full" dangerouslySetInnerHTML={{ __html: content.solution }} />
+                <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 w-full font-medium leading-[1.9] text-[17px] md:text-[19px]" dangerouslySetInnerHTML={{ __html: content.solution }} />
               )}
             </div>
           </section>
 
-          {/* 2. 맥락형 미니 쿠팡 배너 (해결 방법 직후 삽입) -> ProductCard로 대체 */}
+          {/* 2. 맥락형 미니 쿠팡 배너 (ProductCard로 렌더링) */}
           {matchedProduct && (
-            <div className="my-10">
+            <div className="my-14 px-2 md:px-4">
               <ProductCard product={matchedProduct} />
             </div>
           )}
 
           {/* Ad 2: 본문 중간 */}
-          <div className="my-10 py-6 border-y border-slate-100 flex justify-center">
-            <AdPlaceholder position="본문 중간 매치드 콘텐츠 광고" />
+          <div className="my-14 flex justify-center">
+            <AdPlaceholder position="본문 중간 콘텐츠 광고" />
           </div>
 
           {/* 3. 에디터 추가 꿀팁 */}
-          <section className="scroll-mt-24">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">3</span>
-              <h2 className="text-2xl font-extrabold text-slate-900 m-0">에디터 추가 꿀팁</h2>
-            </div>
-            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 md:p-8 rounded-2xl border border-yellow-200/50 shadow-md">
-              <div className="flex gap-4 items-start">
-                <span className="text-3xl">💡</span>
-                <div className="font-semibold text-slate-800 leading-loose w-full" dangerouslySetInnerHTML={{ __html: content.tips }} />
-              </div>
+          <section className="scroll-mt-24 px-2 md:px-4">
+            <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+              <span className="text-yellow-500">💡</span> 에디터가 알려주는 숨은 꿀팁
+            </h2>
+            <div className="bg-yellow-50/80 p-8 rounded-3xl border border-yellow-200/60 shadow-sm relative">
+              <div className="absolute top-0 left-6 -translate-y-1/2 bg-white px-3 py-1 rounded-full border border-yellow-200 text-xs font-bold text-yellow-600 shadow-sm">Bonus Tip</div>
+              <div className="font-semibold text-slate-800 leading-[2.0] text-[17px]" dangerouslySetInnerHTML={{ __html: content.tips }} />
             </div>
           </section>
 
           {/* 4. 요약 정리 */}
-          <section className="scroll-mt-24">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="flex items-center justify-center bg-indigo-600 text-white w-8 h-8 rounded-lg font-black shrink-0 shadow-md">4</span>
-              <h2 className="text-2xl font-extrabold text-slate-900 m-0">요약 정리</h2>
-            </div>
-            <p className="text-xl font-bold text-slate-800 bg-slate-100/80 p-8 rounded-3xl text-center shadow-inner leading-loose">
-              " {content.conclusion} "
-            </p>
+          <section className="scroll-mt-24 px-2 md:px-4 mb-16">
+            <blockquote className="border-l-4 border-slate-800 bg-slate-50 p-8 rounded-r-3xl text-slate-700 italic font-medium leading-relaxed">
+              <span className="block text-4xl text-slate-300 mb-2 font-serif">"</span>
+              <p className="text-[19px] md:text-[21px] font-bold text-slate-900 mb-4">{content.conclusion}</p>
+              <span className="block text-right text-4xl text-slate-300 font-serif">"</span>
+            </blockquote>
           </section>
 
           {/* Recommendation CTA */}
