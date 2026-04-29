@@ -159,18 +159,7 @@ export default function PostDetail() {
           </div>
         </header>
 
-        {/* Thumbnail */}
-        {post.thumbnailUrl && (
-          <figure className="mb-10 w-full aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden">
-            <img 
-              src={post.thumbnailUrl} 
-              alt={post.title} 
-              className="w-full h-full object-cover" 
-              loading="lazy" 
-              decoding="async" 
-            />
-          </figure>
-        )}
+
 
         {/* AI Summary Box (AEO Optimization) */}
         <div className="bg-slate-50 border border-slate-200 p-6 md:p-8 rounded-2xl mb-12 shadow-sm relative overflow-hidden">
@@ -328,24 +317,9 @@ export default function PostDetail() {
             <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><span>✨</span> 이런 생활 꿀팁은 어떠세요?</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {relatedPosts.map(rp => (
-                <Link key={rp.id} to={`/post/${rp.slug}`} onClick={() => window.scrollTo(0,0)} className="group block bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
-                  {rp.thumbnailUrl ? (
-                    <div className="w-full aspect-[4/3] overflow-hidden">
-                      <img 
-                        src={rp.thumbnailUrl} 
-                        alt={rp.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
-                        loading="lazy" 
-                        decoding="async" 
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-[4/3] bg-slate-100 flex items-center justify-center text-slate-300">No Image</div>
-                  )}
-                  <div className="p-4">
-                    <h4 className="font-bold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition leading-snug">{rp.title}</h4>
-                    <div className="text-xs text-slate-400 mt-2 font-bold">{rp.date}</div>
-                  </div>
+                <Link key={rp.id} to={`/post/${rp.slug}`} onClick={() => window.scrollTo(0,0)} className="group flex flex-col justify-between bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-indigo-300 transition h-full">
+                  <h4 className="font-bold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition leading-snug mb-4">{rp.title}</h4>
+                  <div className="text-xs text-slate-400 font-bold">{rp.date}</div>
                 </Link>
               ))}
             </div>
