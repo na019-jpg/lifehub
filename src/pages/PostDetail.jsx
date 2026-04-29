@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import SeoHelmet from '../components/SeoHelmet';
 import AdPlaceholder from '../components/AdPlaceholder';
 import ProductCard from '../components/ProductCard';
-import affiliateProducts from '../data/affiliateProducts';
+import { affiliateProducts } from '../data/affiliateProducts';
 import { useContent } from '../contexts/ContentContext';
 
 export default function PostDetail() {
@@ -72,10 +72,13 @@ export default function PostDetail() {
   // 5. Keyword Matching Logic for ProductCard
   let matchedProduct = null;
   const searchString = `${post.title} ${post.tags || ''} ${post.summary}`.toLowerCase();
-  for (const product of affiliateProducts) {
-    if (product.keywords.some(keyword => searchString.includes(keyword))) {
+  
+  // affiliateProducts는 객체이므로 Object.entries로 순회
+  for (const [key, product] of Object.entries(affiliateProducts)) {
+    // key값 자체를 키워드로 사용
+    if (searchString.includes(key)) {
       matchedProduct = product;
-      break; // 첫 번째 매칭되는 상품 렌더링
+      break; 
     }
   }
 
