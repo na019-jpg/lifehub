@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SeoHelmet from '../components/SeoHelmet';
 import AdPlaceholder from '../components/AdPlaceholder';
+import ProductCard from '../components/ProductCard';
+import affiliateProducts from '../data/affiliateProducts';
 import { useContent } from '../contexts/ContentContext';
 
 export default function PostDetail() {
@@ -66,6 +68,16 @@ export default function PostDetail() {
   }
 
   const { content } = post; // new structured content
+
+  // 5. Keyword Matching Logic for ProductCard
+  let matchedProduct = null;
+  const searchString = `${post.title} ${post.tags || ''} ${post.summary}`.toLowerCase();
+  for (const product of affiliateProducts) {
+    if (product.keywords.some(keyword => searchString.includes(keyword))) {
+      matchedProduct = product;
+      break; // 첫 번째 매칭되는 상품 렌더링
+    }
+  }
 
   // Generate JSON-LD Schema
   const schemaObj = [
@@ -229,19 +241,10 @@ export default function PostDetail() {
             </div>
           </section>
 
-          {/* 2. 맥락형 미니 쿠팡 배너 (해결 방법 직후 삽입) */}
-          {content.recommendation && content.recommendation.url && (
-            <div className="my-8 bg-indigo-50 border border-indigo-100 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm hover:shadow-md transition">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📦</span>
-                <div>
-                  <p className="text-xs font-bold text-indigo-600 mb-0.5">에디터가 직접 효과 본 해결템</p>
-                  <p className="text-sm font-bold text-slate-800 line-clamp-1">{content.recommendation.name}</p>
-                </div>
-              </div>
-              <a href={content.recommendation.url} target="_blank" rel="noreferrer noopener" className="w-full sm:w-auto text-center bg-indigo-600 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-sm shrink-0">
-                로켓배송 보러가기 ➔
-              </a>
+          {/* 2. 맥락형 미니 쿠팡 배너 (해결 방법 직후 삽입) -> ProductCard로 대체 */}
+          {matchedProduct && (
+            <div className="my-10">
+              <ProductCard product={matchedProduct} />
             </div>
           )}
 
