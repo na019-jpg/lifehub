@@ -23,7 +23,7 @@ function autoDeployPlugin() {
                fs.writeFileSync(filePath, JSON.stringify(JSON.parse(body), null, 2));
 
                // 2. 백그라운드 깃허브 명령어 실행
-               const gitCommand = '"C:\\Program Files\\Git\\cmd\\git.exe" add . && "C:\\Program Files\\Git\\cmd\\git.exe" commit -m "Auto deploy from Admin" && "C:\\Program Files\\Git\\cmd\\git.exe" push origin main';
+               const gitCommand = '"C:\\Program Files\\Git\\cmd\\git.exe" add . && "C:\\Program Files\\Git\\cmd\\git.exe" commit -m "Auto deploy from Admin" && "C:\\Program Files\\Git\\cmd\\git.exe" push origin HEAD:main';
                
                exec(gitCommand, { cwd: __dirname }, (error, stdout, stderr) => {
                  res.setHeader('Content-Type', 'application/json');
