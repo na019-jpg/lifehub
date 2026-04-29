@@ -14,20 +14,21 @@ function generateSeo() {
   const data = JSON.parse(rawData);
 
   const urls = [
-    { loc: `${DOMAIN}/`, priority: 1.0 },
+    { loc: `${DOMAIN}/`, priority: 1.0, changefreq: 'daily' },
   ];
 
   // Add categories
   if (data.categories) {
     data.categories.forEach(cat => {
-      urls.push({ loc: `${DOMAIN}/category/${cat.id}`, priority: 0.8 });
+      urls.push({ loc: `${DOMAIN}/category/${cat.id}`, priority: 0.8, changefreq: 'weekly' });
     });
   }
 
   // Add posts
   if (data.posts) {
     data.posts.forEach(post => {
-      urls.push({ loc: `${DOMAIN}/post/${post.slug}`, priority: 0.9 });
+      const lastMod = post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      urls.push({ loc: `${DOMAIN}/post/${post.slug || post.id}`, priority: 0.9, changefreq: 'monthly', lastmod: lastMod });
     });
   }
 
@@ -35,7 +36,8 @@ function generateSeo() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(u => `  <url>
     <loc>${u.loc}</loc>
-    <priority>${u.priority}</priority>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>${u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : ''}
   </url>`).join('\n')}
 </urlset>`;
 

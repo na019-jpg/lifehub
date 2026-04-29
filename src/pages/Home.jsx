@@ -49,6 +49,8 @@ export default function Home() {
       <SeoHelmet 
         title="LifeHub - 프리미엄 생활 매거진" 
         description="일상 속 모든 문제를 해결하는 오직 당신을 위한 프리미엄 가이드. 청소, 정리, 요리 꿀팁!"
+        url={window.location.href}
+        type="website"
       />
       
       {/* 1. HERO BANNER SECTION */}

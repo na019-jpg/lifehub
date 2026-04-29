@@ -138,6 +138,8 @@ export default function PostDetail() {
         description={post.summary} 
         keywords="청소, 생활꿀팁, 세탁, 최저가"
         schema={schemaObj}
+        url={window.location.href}
+        type="article"
       />
 
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
