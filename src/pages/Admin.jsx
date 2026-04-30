@@ -32,8 +32,19 @@ export default function Admin() {
   const [postData, setPostData] = useState({
     title: '', categoryId: 'clean', subcategory: '', summary: '', thumbnailUrl: '',
     problem: '', cause: '', solution: '', tips: '', conclusion: '',
-    recommendationName: '', recommendationUrl: '', recommendationPrice: ''
+    recommendationName: '', recommendationUrl: '', recommendationPrice: '',
+    faqs: [
+      { q: '', a: '' },
+      { q: '', a: '' },
+      { q: '', a: '' }
+    ]
   });
+
+  const handleFaqChange = (index, field, value) => {
+    const newFaqs = [...postData.faqs];
+    newFaqs[index][field] = value;
+    setPostData({ ...postData, faqs: newFaqs });
+  };
 
   // Automatically update subcategory when category changes
   const handleCategoryChange = (e) => {
@@ -87,6 +98,7 @@ export default function Admin() {
       recommendationName: draft.content?.recommendation?.name || '',
       recommendationUrl: draft.content?.recommendation?.url || '',
       recommendationPrice: draft.content?.recommendation?.price || '',
+      faqs: Array.isArray(draft.content?.faqs) ? draft.content.faqs : [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
     });
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
@@ -120,6 +132,7 @@ export default function Admin() {
       recommendationName: post.content?.recommendation?.name || '',
       recommendationUrl: post.content?.recommendation?.url || '',
       recommendationPrice: post.content?.recommendation?.price || '',
+      faqs: Array.isArray(post.content?.faqs) ? post.content.faqs : [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -135,9 +148,8 @@ export default function Admin() {
     setCurrentDraftId(null);
     setEditingPostId(null);
     setPostData({
-      title: '', categoryId: 'clean', subcategory: '', summary: '', thumbnailUrl: '',
-      problem: '', cause: '', solution: '', tips: '', conclusion: '',
-      recommendationName: '', recommendationUrl: '', recommendationPrice: ''
+      recommendationName: '', recommendationUrl: '', recommendationPrice: '',
+      faqs: [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
     });
   };
 
@@ -160,7 +172,8 @@ export default function Admin() {
         name: postData.recommendationName,
         url: postData.recommendationUrl,
         price: postData.recommendationPrice
-      }
+      },
+      faqs: postData.faqs.filter(f => f.q && f.a)
     };
 
     if (editingPostId) {
@@ -446,6 +459,36 @@ export default function Admin() {
                    <input type="text" value={postData.recommendationName} onChange={e => setPostData({...postData, recommendationName: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="상품명 (예: 산소계 표백제)" />
                    <input type="text" value={postData.recommendationPrice} onChange={e => setPostData({...postData, recommendationPrice: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="할인 가격 (예: 12,000원)" />
                    <input type="url" value={postData.recommendationUrl} onChange={e => setPostData({...postData, recommendationUrl: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="제휴 URL (https://...)" />
+                 </div>
+              </section>
+
+              <section className="bg-emerald-50 p-6 rounded-3xl border border-emerald-200 shadow-sm focus-within:border-emerald-400 transition-all">
+                 <h2 className="text-xl font-bold text-emerald-900 mb-4">🙋‍♂️ FAQ (AEO 최적화 답변 섹션)</h2>
+                 <p className="text-xs text-emerald-700 mb-4 font-bold">구글 검색 시 '질문-답변' 리치 결과로 노출될 확률을 높입니다.</p>
+                 <div className="space-y-4">
+                   {postData.faqs.map((faq, idx) => (
+                     <div key={idx} className="p-4 bg-white rounded-2xl border border-emerald-100 space-y-2">
+                       <div className="flex gap-2 items-center">
+                         <span className="bg-emerald-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold">Q</span>
+                         <input 
+                            type="text" 
+                            value={faq.q} 
+                            onChange={e => handleFaqChange(idx, 'q', e.target.value)} 
+                            className="flex-1 px-3 py-2 border rounded-lg outline-none focus:border-emerald-500" 
+                            placeholder="사용자가 검색할만한 질문 (예: 곰팡이 방지법은?)"
+                         />
+                       </div>
+                       <div className="flex gap-2 items-start">
+                         <span className="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mt-2">A</span>
+                         <textarea 
+                            value={faq.a} 
+                            onChange={e => handleFaqChange(idx, 'a', e.target.value)} 
+                            className="flex-1 px-3 py-2 border rounded-lg outline-none focus:border-emerald-500 h-20" 
+                            placeholder="명확하고 친절한 답변 (구글 검색 결과에 직접 노출됩니다)"
+                         />
+                       </div>
+                     </div>
+                   ))}
                  </div>
               </section>
 

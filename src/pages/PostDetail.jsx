@@ -111,6 +111,22 @@ export default function PostDetail() {
     }
   ];
 
+  // 6. Generate FAQ Schema (AEO Optimization)
+  if (content.faqs && content.faqs.length > 0) {
+    schemaObj.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": content.faqs.map(f => ({
+        "@type": "Question",
+        "name": f.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": f.a
+        }
+      }))
+    });
+  }
+
   return (
     <article className="bg-white min-h-screen relative">
       {/* 1. Scroll Progress Bar */}
@@ -286,6 +302,26 @@ export default function PostDetail() {
             카카오톡 등 유용한 꿀팁 공유하기
           </button>
         </div>
+
+        {/* 5. FAQ Section (AEO Optimization) */}
+        {content.faqs && content.faqs.length > 0 && (
+          <section className="mt-20 border-t border-slate-200 pt-12 animate-fade-in">
+            <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-2"><span>🙋‍♂️</span> 궁금해하실 내용을 정리했어요</h3>
+            <div className="space-y-4">
+              {content.faqs.map((faq, idx) => (
+                <div key={idx} className="bg-emerald-50/30 rounded-3xl p-6 md:p-8 border border-emerald-100/50 hover:border-emerald-300 transition-all group">
+                  <h4 className="text-lg md:text-xl font-bold text-slate-900 mb-4 flex items-start gap-3">
+                    <span className="bg-emerald-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm shadow-emerald-200">Q</span>
+                    {faq.q}
+                  </h4>
+                  <div className="text-slate-700 leading-relaxed pl-10 border-l-2 border-emerald-200/50 ml-3.5 font-medium md:text-[17px]">
+                    {faq.a}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 6. Category Explorer (Jump to other categories) */}
         <section className="mt-20 border-t border-slate-200 pt-12">
