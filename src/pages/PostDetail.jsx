@@ -2,16 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SeoHelmet from '../components/SeoHelmet';
 import AdPlaceholder from '../components/AdPlaceholder';
-import ProductCard from '../components/ProductCard';
 import PostCard from '../components/PostCard';
-import ProductComparison from '../components/ProductComparison';
-import { affiliateProducts } from '../data/affiliateProducts';
 import { useContent } from '../contexts/ContentContext';
 
 export default function PostDetail() {
   const { slug } = useParams();
   const { data } = useContent();
-  const post = data.posts.find(p => p.slug === slug);
+  const post = data.posts.find(p => p.slug === slug || p.id === slug);
   const category = data.categories.find(c => c.id === post?.categoryId);
 
   // 1. Scroll Progress State
@@ -72,16 +69,7 @@ export default function PostDetail() {
 
   const { content } = post; // new structured content
 
-  // 5. Keyword Matching Logic for ProductCard
-  let matchedProduct = null;
-  const searchString = `${post.title} ${post.tags || ''} ${post.summary}`.toLowerCase();
-  
-  for (const [key, product] of Object.entries(affiliateProducts)) {
-    if (searchString.includes(key)) {
-      matchedProduct = product;
-      break; 
-    }
-  }
+  // Removed Keyword Matching Logic for ProductCard
 
   // Generate JSON-LD Schema
   const schemaObj = [
@@ -219,29 +207,14 @@ export default function PostDetail() {
             </h2>
             <div className="space-y-6 px-2 md:px-4">
               {Array.isArray(content.solution) ? content.solution.map((step, idx) => (
-                <React.Fragment key={idx}>
-                  <div className="flex gap-4 items-start bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-2xl hover:border-indigo-300 transition-colors">
-                    <span className="flex items-center justify-center bg-indigo-600 text-white font-extrabold w-10 h-10 rounded-full shrink-0 text-lg shadow-sm mt-1">
-                      {idx + 1}
-                    </span>
-                    <div className="font-medium text-slate-800 leading-[1.9] w-full text-[17px] md:text-[19px]" dangerouslySetInnerHTML={{ __html: step }} />
-                  </div>
-                  {/* Contextual Placement: Show product comparison after the first step to catch attention early */}
-                  {idx === 0 && matchedProduct && (
-                    <div className="my-10 animate-fade-in">
-                      <ProductComparison products={matchedProduct} />
-                    </div>
-                  )}
-                </React.Fragment>
+                <div key={idx} className="flex gap-4 items-start bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-2xl hover:border-indigo-300 transition-colors">
+                  <span className="flex items-center justify-center bg-indigo-600 text-white font-extrabold w-10 h-10 rounded-full shrink-0 text-lg shadow-sm mt-1">
+                    {idx + 1}
+                  </span>
+                  <div className="font-medium text-slate-800 leading-[1.9] w-full text-[17px] md:text-[19px]" dangerouslySetInnerHTML={{ __html: step }} />
+                </div>
               )) : (
-                <>
-                  <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 w-full font-medium leading-[1.9] text-[17px] md:text-[19px]" dangerouslySetInnerHTML={{ __html: content.solution }} />
-                  {matchedProduct && (
-                    <div className="my-10 animate-fade-in">
-                      <ProductComparison products={matchedProduct} />
-                    </div>
-                  )}
-                </>
+                <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 w-full font-medium leading-[1.9] text-[17px] md:text-[19px]" dangerouslySetInnerHTML={{ __html: content.solution }} />
               )}
             </div>
           </section>
@@ -363,29 +336,6 @@ export default function PostDetail() {
         )}
 
       </div>
-
-      {/* Sticky Bottom CTA */}
-      {content.recommendation && content.recommendation.url && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 transform transition-transform duration-300">
-          <div className="container mx-auto max-w-3xl flex items-center justify-between gap-4">
-            <div className="hidden md:block flex-1 min-w-0">
-              <p className="text-xs text-rose-600 font-bold mb-0.5 animate-pulse">🚨 재고 소진 임박 / 와우회원 특가</p>
-              <p className="text-sm font-bold text-slate-900 truncate">{content.recommendation.name}</p>
-            </div>
-            <a 
-              href={content.recommendation.url} 
-              target="_blank" 
-              rel="noreferrer noopener"
-              className="flex-1 md:flex-none text-center bg-rose-600 text-white font-black text-[17px] md:text-lg px-6 py-4 rounded-xl hover:bg-rose-700 transition shadow-lg shadow-rose-200 animate-shake overflow-hidden relative group"
-            >
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-              🚀 최저가 확인하기
-            </a>
-          </div>
-        </div>
-      )}
-
     </article>
   );
 }
-
