@@ -88,7 +88,12 @@ async function generateStructuredContent(keyword) {
   "recommendation": {
     "name": "이 문제를 해결하는 데 도움이 되는 추천 상품명",
     "price": "예상 가격 (예: 12,000원 대)"
-  }
+  },
+  "faqs": [
+    { "q": "사용자가 궁금해할만한 첫 번째 질문", "a": "그에 대한 명확하고 친절한 답변" },
+    { "q": "두 번째 질문", "a": "두 번째 답변" },
+    { "q": "세 번째 질문", "a": "세 번째 답변" }
+  ]
 }
 `;
 
@@ -132,6 +137,7 @@ async function startAutoGeneration() {
           solution: structuredData.solution,
           tips: structuredData.tips,
           conclusion: structuredData.conclusion,
+          faqs: structuredData.faqs,
           recommendation: {
             name: structuredData.recommendation?.name || "추천 상품을 입력하세요",
             url: "", 
