@@ -85,6 +85,10 @@ async function generateStructuredContent(keyword) {
   ],
   "tips": "<strong>에디터의 특급 꿀팁!</strong><br>추가로 알면 좋은 노하우나 주의사항 (200자 이상)",
   "conclusion": "전체 과정을 요약하는 1~2문장 마무리",
+  "recommendation": {
+    "name": "이 문제를 해결하는 데 도움이 되는 추천 상품명",
+    "price": "예상 가격 (예: 12,000원 대)"
+  },
   "faqs": [
     { "q": "사용자가 궁금해할만한 첫 번째 질문", "a": "그에 대한 명확하고 친절한 답변" },
     { "q": "두 번째 질문", "a": "두 번째 답변" },

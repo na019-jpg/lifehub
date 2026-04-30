@@ -32,6 +32,7 @@ export default function Admin() {
   const [postData, setPostData] = useState({
     title: '', categoryId: 'clean', subcategory: '', summary: '', thumbnailUrl: '',
     problem: '', cause: '', solution: '', tips: '', conclusion: '',
+    recommendationName: '', recommendationUrl: '', recommendationPrice: '',
     faqs: [
       { q: '', a: '' },
       { q: '', a: '' },
@@ -94,6 +95,9 @@ export default function Admin() {
       solution: Array.isArray(draft.content?.solution) ? draft.content.solution.join('\n') : (draft.content?.solution || ''),
       tips: draft.content?.tips || '',
       conclusion: draft.content?.conclusion || '',
+      recommendationName: draft.content?.recommendation?.name || '',
+      recommendationUrl: draft.content?.recommendation?.url || '',
+      recommendationPrice: draft.content?.recommendation?.price || '',
       faqs: Array.isArray(draft.content?.faqs) ? draft.content.faqs : [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
     });
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -125,6 +129,9 @@ export default function Admin() {
       solution: Array.isArray(post.content?.solution) ? post.content.solution.join('\n') : (post.content?.solution || ''),
       tips: post.content?.tips || '',
       conclusion: post.content?.conclusion || '',
+      recommendationName: post.content?.recommendation?.name || '',
+      recommendationUrl: post.content?.recommendation?.url || '',
+      recommendationPrice: post.content?.recommendation?.price || '',
       faqs: Array.isArray(post.content?.faqs) ? post.content.faqs : [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -161,6 +168,11 @@ export default function Admin() {
       solution: postData.solution.split('\n').filter(Boolean),
       tips: postData.tips,
       conclusion: postData.conclusion,
+      recommendation: {
+        name: postData.recommendationName,
+        url: postData.recommendationUrl,
+        price: postData.recommendationPrice
+      },
       faqs: postData.faqs.filter(f => f.q && f.a)
     };
 
@@ -438,6 +450,15 @@ export default function Admin() {
                    <textarea required value={postData.solution} onChange={e => setPostData({...postData, solution: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition h-32" placeholder="3. 🚀 단계별 해결 방법 (엔터로 구분해서 입력 시 자동으로 넘버링 리스트업 됩니다)"></textarea>
                    <textarea required value={postData.tips} onChange={e => setPostData({...postData, tips: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="4. 💡 에디터 추가 꿀팁"></textarea>
                    <textarea required value={postData.conclusion} onChange={e => setPostData({...postData, conclusion: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="5. ✨ 요약 및 기대 효과 (한 줄 정리)"></textarea>
+                 </div>
+              </section>
+
+              <section className="bg-blue-50 p-6 rounded-3xl border border-blue-200 shadow-sm focus-within:border-blue-400 focus-within:shadow-md transition-all">
+                 <h2 className="text-xl font-bold text-blue-900 mb-4">💎 추천 상품 제휴 링크 (쿠팡 버튼)</h2>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                   <input type="text" value={postData.recommendationName} onChange={e => setPostData({...postData, recommendationName: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="상품명 (예: 산소계 표백제)" />
+                   <input type="text" value={postData.recommendationPrice} onChange={e => setPostData({...postData, recommendationPrice: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="할인 가격 (예: 12,000원)" />
+                   <input type="url" value={postData.recommendationUrl} onChange={e => setPostData({...postData, recommendationUrl: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="제휴 URL (https://...)" />
                  </div>
               </section>
 
