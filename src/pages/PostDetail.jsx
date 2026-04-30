@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import SeoHelmet from '../components/SeoHelmet';
 import AdPlaceholder from '../components/AdPlaceholder';
 import ProductCard from '../components/ProductCard';
+import PostCard from '../components/PostCard';
 import { affiliateProducts } from '../data/affiliateProducts';
 import { useContent } from '../contexts/ContentContext';
 
@@ -46,16 +47,17 @@ export default function PostDetail() {
     }
   };
 
-  // 3. Related Posts
+  // 3. Related Posts (exactly 3)
   let relatedPosts = data.posts
     .filter(p => p.categoryId === post?.categoryId && p.id !== post?.id)
     .slice(0, 3);
 
   // 같은 카테고리에 다른 글이 아직 없다면, 카테고리 상관없이 최신 글을 추천합니다.
-  if (relatedPosts.length === 0) {
-    relatedPosts = data.posts
-      .filter(p => p.id !== post?.id)
-      .slice(0, 3);
+  if (relatedPosts.length < 3) {
+    const additionalPosts = data.posts
+      .filter(p => p.id !== post?.id && !relatedPosts.some(rp => rp.id === p.id))
+      .slice(0, 3 - relatedPosts.length);
+    relatedPosts = [...relatedPosts, ...additionalPosts];
   }
 
   if (!post) {
@@ -73,9 +75,7 @@ export default function PostDetail() {
   let matchedProduct = null;
   const searchString = `${post.title} ${post.tags || ''} ${post.summary}`.toLowerCase();
   
-  // affiliateProducts는 객체이므로 Object.entries로 순회
   for (const [key, product] of Object.entries(affiliateProducts)) {
-    // key값 자체를 키워드로 사용
     if (searchString.includes(key)) {
       matchedProduct = product;
       break; 
@@ -108,21 +108,6 @@ export default function PostDetail() {
         "@id": window.location.href
       },
       "description": post.summary
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      "name": post.title,
-      "description": post.summary,
-      "step": Array.isArray(content.solution) 
-        ? content.solution.map((stepText) => ({
-            "@type": "HowToStep",
-            "text": stepText
-          }))
-        : [{
-            "@type": "HowToStep",
-            "text": content.solution
-          }]
     }
   ];
 
@@ -161,9 +146,7 @@ export default function PostDetail() {
           </div>
         </header>
 
-
-
-        {/* AI Summary Box (AEO Optimization) */}
+        {/* AI Summary Box */}
         <div className="bg-slate-50 border border-slate-200 p-6 md:p-8 rounded-2xl mb-12 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-2 mb-5 relative z-10 border-b border-slate-200 pb-3">
             <span className="text-2xl">💡</span>
@@ -188,12 +171,10 @@ export default function PostDetail() {
           </ul>
         </div>
 
-        {/* Ad 1: 본문 진입 직전 (위험 클릭 방지를 위해 요약문 아래 배치) */}
         <div className="my-10">
           <AdPlaceholder position="본문 상단 광고" />
         </div>
 
-        {/* 체계적인 본문 시작 - 블로그형 텍스트 스타일링 강화 */}
         <div className="prose prose-base md:prose-lg prose-slate max-w-none text-[#222222] prose-p:text-[17px] prose-p:leading-[2.0] md:prose-p:text-[19px] md:prose-p:leading-[2.2] space-y-20 md:space-y-24 tracking-[-0.02em]">
 
           {/* 1. 발생 원인 및 문제점 */}
@@ -233,19 +214,16 @@ export default function PostDetail() {
             </div>
           </section>
 
-          {/* 2. 맥락형 미니 쿠팡 배너 (ProductCard로 렌더링) */}
           {matchedProduct && (
             <div className="my-14 px-2 md:px-4">
               <ProductCard product={matchedProduct} />
             </div>
           )}
 
-          {/* Ad 2: 본문 중간 */}
           <div className="my-14 flex justify-center">
             <AdPlaceholder position="본문 중간 콘텐츠 광고" />
           </div>
 
-          {/* 3. 에디터 추가 꿀팁 */}
           <section className="scroll-mt-24 px-2 md:px-4">
             <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
               <span className="text-yellow-500">💡</span> 에디터가 알려주는 숨은 꿀팁
@@ -256,7 +234,6 @@ export default function PostDetail() {
             </div>
           </section>
 
-          {/* 4. 요약 정리 */}
           <section className="scroll-mt-24 px-2 md:px-4 mb-16">
             <blockquote className="border-l-4 border-slate-800 bg-slate-50 p-8 rounded-r-3xl text-slate-700 italic font-medium leading-relaxed">
               <span className="block text-4xl text-slate-300 mb-2 font-serif">"</span>
@@ -265,7 +242,6 @@ export default function PostDetail() {
             </blockquote>
           </section>
 
-          {/* Recommendation CTA */}
           {content.recommendation && content.recommendation.url && (
             <section className="mt-16 mb-8 relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl shadow-indigo-200/50">
               <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
@@ -300,12 +276,10 @@ export default function PostDetail() {
 
         </div>
 
-        {/* Ad 3: 본문 하단 */}
         <div className="mt-16 border-t border-slate-200 pt-10 flex justify-center">
           <AdPlaceholder position="본문 하단 추천 위젯형 광고" />
         </div>
 
-        {/* 4. 공유하기 버튼 */}
         <div className="mt-12 flex justify-center">
           <button onClick={handleShare} className="flex items-center gap-2 bg-[#FEE500] hover:bg-[#F4DC00] text-slate-900 font-black px-8 py-4 rounded-2xl shadow-lg shadow-yellow-200/50 transition transform hover:-translate-y-1 w-full md:w-auto justify-center">
             <span className="text-xl">💬</span>
@@ -313,16 +287,30 @@ export default function PostDetail() {
           </button>
         </div>
 
-        {/* 3. 다음 꿀팁 이어보기 (Related Posts) */}
+        {/* 6. Category Explorer (Jump to other categories) */}
+        <section className="mt-20 border-t border-slate-200 pt-12">
+          <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><span>📂</span> 다른 주제의 꿀팁도 확인해보세요</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {data.categories.map(cat => (
+              <Link 
+                key={cat.id} 
+                to={`/?cat=${cat.id}`} 
+                className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:border-indigo-300 hover:shadow-md transition group text-center"
+              >
+                <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">{cat.icon}</span>
+                <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-600">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* 7. Enhanced Recommended Content (3 Items) */}
         {relatedPosts.length > 0 && (
           <section className="mt-16 border-t border-slate-200 pt-12 pb-24 md:pb-8">
-            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><span>✨</span> 이런 생활 꿀팁은 어떠세요?</h3>
+            <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><span>✨</span> 에디터 추천 콘텐츠</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {relatedPosts.map(rp => (
-                <Link key={rp.id} to={`/post/${rp.slug}`} onClick={() => window.scrollTo(0,0)} className="group flex flex-col justify-between bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-indigo-300 transition h-full">
-                  <h4 className="font-bold text-slate-800 line-clamp-2 group-hover:text-indigo-600 transition leading-snug mb-4">{rp.title}</h4>
-                  <div className="text-xs text-slate-400 font-bold">{rp.date}</div>
-                </Link>
+                <PostCard key={rp.id} post={rp} />
               ))}
             </div>
           </section>
@@ -330,7 +318,7 @@ export default function PostDetail() {
 
       </div>
 
-      {/* Sticky Bottom CTA for Mobile & Desktop */}
+      {/* Sticky Bottom CTA */}
       {content.recommendation && content.recommendation.url && (
         <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/80 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 transform transition-transform duration-300">
           <div className="container mx-auto max-w-3xl flex items-center justify-between gap-4">
@@ -353,3 +341,4 @@ export default function PostDetail() {
     </article>
   );
 }
+

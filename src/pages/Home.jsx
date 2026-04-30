@@ -1,18 +1,33 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useContent } from '../contexts/ContentContext';
 import PostCard from '../components/PostCard';
 import SeoHelmet from '../components/SeoHelmet';
 
 export default function Home() {
   const { data } = useContent();
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const activeCategory = searchParams.get('cat') || 'all';
+  const searchQuery = searchParams.get('q') || '';
   const [activeSubcategory, setActiveSubcategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Handle active category change
+  // Handle category change via URL
   const handleCategoryClick = (catId) => {
-    setActiveCategory(catId);
+    const newParams = new URLSearchParams(searchParams);
+    if (catId === 'all') newParams.delete('cat');
+    else newParams.set('cat', catId);
+    newParams.delete('q'); // Clear search when switching categories
+    setSearchParams(newParams);
+    setActiveSubcategory('all');
+  };
+
+  // Handle search change via URL
+  const handleSearchChange = (query) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (!query) newParams.delete('q');
+    else newParams.set('q', query);
+    setSearchParams(newParams);
   };
 
   // Get current category object
@@ -79,7 +94,7 @@ export default function Home() {
               type="text" 
               placeholder="무엇이 궁금하신가요? (예: 곰팡이 제거)" 
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={e => handleSearchChange(e.target.value)}
               className="w-full pl-14 pr-6 py-4 md:py-5 bg-white/10 backdrop-blur-md border border-white/20 focus:bg-white focus:text-slate-900 focus:border-blue-400 rounded-full outline-none transition-all font-bold text-white placeholder-slate-300 shadow-xl text-[16px]"
             />
           </div>
@@ -91,7 +106,7 @@ export default function Home() {
         <div className="mb-4">
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => {setActiveCategory('all'); setActiveSubcategory('all');}}
+              onClick={() => handleCategoryClick('all')}
               className={`px-4 py-2 rounded-full font-bold text-sm transition-all shadow-sm ${
                 activeCategory === 'all' 
                   ? 'bg-slate-800 text-white border-2 border-slate-800' 
@@ -103,7 +118,7 @@ export default function Home() {
             {data.categories.map(c => (
               <button
                 key={c.id}
-                onClick={() => {setActiveCategory(c.id); setActiveSubcategory('all');}}
+                onClick={() => handleCategoryClick(c.id)}
                 className={`px-4 py-2 rounded-full font-bold text-sm flex items-center gap-1.5 transition-all shadow-sm ${
                   activeCategory === c.id 
                     ? 'bg-blue-600 text-white border-2 border-blue-600' 
@@ -160,7 +175,7 @@ export default function Home() {
           </div>
           {(searchQuery || activeCategory !== 'all') && (
             <button 
-              onClick={() => {setSearchQuery(''); setActiveCategory('all'); setActiveSubcategory('all');}}
+              onClick={() => {handleCategoryClick('all');}}
               className="text-[11px] font-bold text-slate-400 hover:text-slate-600"
             >
               초기화 ✕
@@ -190,3 +205,4 @@ export default function Home() {
     </div>
   );
 }
+
