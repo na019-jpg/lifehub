@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 // 환경 변수 설정
 dotenv.config();
@@ -15,7 +17,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // 구글 최신 플래시 모델 적용
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-// 8대 카테고리 분야 전반을 다루는 100+ 꿀팁 키워드 풀
+// 8대 카테고리 분야 전반을 다루는 100+ 꿀팁 키워드 풀 (트렌드 조회 실패 시 Fallback)
 const LIFESTYLE_KEYWORDS = [
   // 의생활
   "누런 면티 하얗게 만들기", "니트 보풀 제거 꿀팁", "겨울 패딩 세탁 및 보관법", "옷에 묻은 커피 얼룩 제거", "청바지 물빠짐 방지",
@@ -35,10 +37,24 @@ const LIFESTYLE_KEYWORDS = [
   "강아지 노령기 케어 꿀팁", "고양이 스크래쳐 고르는 법", "초보자용 공기정화 식물", "화초 분갈이 시기와 방법", "반려동물 금기 식물"
 ];
 
-// 타겟 개수
-const POSTS_TO_GENERATE = 3;
+// 구글 트렌드에서 실시간 인기 검색어 TOP 10 가져오기
+async function getTrendingKeywords(count = 10) {
+  try {
+    const res = await axios.get('https://trends.google.com/trending/rss?geo=KR');
+    const $ = cheerio.load(res.data, { xmlMode: true });
+    const items = $('item title').map((i, el) => $(el).text()).get().slice(0, count);
+    if (items.length > 0) {
+      console.log(`📈 구글 트렌드 키워드 추출 성공: ${items.join(', ')}`);
+      return items;
+    }
+  } catch (error) {
+    console.error(`구글 트렌드 RSS 가져오기 실패: ${error.message}`);
+  }
+  console.log(`⚠️ 트렌드 추출에 실패하여 기존 라이프스타일 키워드 풀에서 무작위 추출합니다.`);
+  return getRandomKeywords(count);
+}
 
-// 키워드 무작위 추출 함수
+// 키워드 무작위 추출 함수 (Fallback 용)
 function getRandomKeywords(count) {
   const shuffled = LIFESTYLE_KEYWORDS.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
@@ -48,6 +64,10 @@ async function generateStructuredContent(keyword) {
   const prompt = `
 당신은 트래픽을 유도하고 제휴 마케팅 수익을 창출하는 '수익형 라이프스타일 매거진 에디터'입니다.
 다음 키워드에 맞춰서 엄청나게 유익하고 구체적인 블로그 포스트 데이터를 처음부터 끝까지 창작해주세요: "${keyword}"
+
+🚨 중요 지침: 
+만약 주어진 키워드가 정치, 뉴스, 연예 등 라이프스타일과 직접적인 연관이 없어 보인다면, 창의력을 발휘하여 어떻게든 실생활(건강, 식생활, 의생활, 디지털 등)의 유익한 정보성 글로 연결지어 작성하세요. 
+(예: 키워드가 특정 예능 프로그램이라면 -> "해당 예능을 보면서 즐기기 좋은 야식 레시피" 또는 "장시간 TV 시청을 위한 스트레칭 방법" 등)
 
 현재 사이트는 다음 카테고리 트리 구조를 사용합니다 (반드시 이 표에 있는 Main Category 영문 ID와 서브카테고리 한글명 중 딱 1개씩만 골라야 합니다):
 
@@ -111,14 +131,16 @@ async function generateStructuredContent(keyword) {
 }
 
 async function startAutoGeneration() {
-  console.log(`🤖 AI 라이프스타일 매거진 포스팅 생성기 가동`);
+  console.log(`🤖 AI 라이프스타일 매거진 포스팅 생성기 가동 (구글 트렌드 연동)`);
   
-  const keywords = getRandomKeywords(POSTS_TO_GENERATE);
+  // 트렌드 기반 키워드 10개 가져오기
+  const TARGET_COUNT = 10;
+  const keywords = await getTrendingKeywords(TARGET_COUNT);
   const drafts = [];
 
   for (let i = 0; i < keywords.length; i++) {
     const keyword = keywords[i];
-    console.log(`[${i+1}/${POSTS_TO_GENERATE}] AI가 포스트를 작성 중입니다... (주제: ${keyword})`);
+    console.log(`\n[${i+1}/${keywords.length}] AI가 포스트를 작성 중입니다... (주제: ${keyword})`);
     
     const structuredData = await generateStructuredContent(keyword);
 
@@ -129,8 +151,7 @@ async function startAutoGeneration() {
         summary: structuredData.summary,
         categoryId: structuredData.categoryId,
         subcategory: structuredData.subcategory,
-        tags: `${keyword.replace(/\s+/g, ', ')}, 라이프스타일`,
-        // thumbnailUrl 삭제됨
+        tags: `${keyword.replace(/\s+/g, ', ')}, 실시간트렌드, 라이프스타일`,
         content: {
           problem: structuredData.problem,
           cause: structuredData.cause,
@@ -145,16 +166,21 @@ async function startAutoGeneration() {
           }
         }
       });
+      console.log(`   ✅ 생성 완료: ${structuredData.title}`);
+    } else {
+      console.log(`   ❌ 생성 실패: ${keyword}`);
     }
 
     // Rate Limiting 방지 (3초 대기)
-    await new Promise(r => setTimeout(r, 3000));
+    if (i < keywords.length - 1) {
+      await new Promise(r => setTimeout(r, 3000));
+    }
   }
 
   if (drafts.length > 0) {
     const outputPath = path.resolve('public/drafts.json');
     fs.writeFileSync(outputPath, JSON.stringify(drafts, null, 2), 'utf-8');
-    console.log(`\n🎉 완료! ${drafts.length}건의 초고퀄리티 AI 포스트가 public/drafts.json 에 저장되었습니다.`);
+    console.log(`\n🎉 완료! ${drafts.length}건의 트렌드 맞춤형 초고퀄리티 AI 포스트가 public/drafts.json 에 저장되었습니다.`);
   } else {
     console.log(`\n⚠️ AI 호출이 실패했습니다. 구글 API 키 한도나 네트워크를 확인해주세요.`);
   }
