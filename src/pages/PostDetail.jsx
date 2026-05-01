@@ -43,20 +43,7 @@ export default function PostDetail() {
   const post = data.posts.find(p => p.slug === slug || p.id === slug);
   const category = data.categories.find(c => c.id === post?.categoryId);
 
-  // 1. Scroll Progress State
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollTop || document.body.scrollTop;
-      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      if (windowHeight === 0) return;
-      const scroll = `${totalScroll / windowHeight}`;
-      setScrollProgress(scroll * 100);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // 1. Scroll Progress State is managed by ScrollProgressBar
 
   // 4. Share Handler
   const handleShare = async () => {
@@ -101,16 +88,16 @@ export default function PostDetail() {
 
   const { content } = post; // new structured content
 
-  // 5. Keyword Matching Logic for ProductCard
-  let matchedProduct = null;
-  const searchString = `${post.title} ${post.tags || ''} ${post.summary}`.toLowerCase();
-  
-  for (const [key, product] of Object.entries(affiliateProducts)) {
-    if (searchString.includes(key)) {
-      matchedProduct = product;
-      break; 
+  // 5. Keyword Matching Logic for ProductCard (Memoized)
+  const matchedProduct = useMemo(() => {
+    const searchString = `${post.title} ${post.tags || ''} ${post.summary}`.toLowerCase();
+    for (const [key, product] of Object.entries(affiliateProducts)) {
+      if (searchString.includes(key)) {
+        return product;
+      }
     }
-  }
+    return null;
+  }, [post]);
 
   // Generate JSON-LD Schema
   const schemaObj = [
@@ -160,10 +147,7 @@ export default function PostDetail() {
   return (
     <article className="bg-white min-h-screen relative">
       {/* 1. Scroll Progress Bar */}
-      <div 
-        className="fixed top-0 left-0 h-1.5 bg-indigo-600 z-[100] transition-all duration-150 ease-out" 
-        style={{ width: `${scrollProgress}%` }}
-      ></div>
+      <ScrollProgressBar />
       <SeoHelmet 
         title={post.title} 
         description={post.summary} 

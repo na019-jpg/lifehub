@@ -5,7 +5,7 @@ const ContentContext = createContext();
 
 export function ContentProvider({ children }) {
   const [data, setData] = useState(() => {
-    const savedData = localStorage.getItem('bloghub_content_v2');
+    const savedData = localStorage.getItem('bloghub_content_v3');
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -28,7 +28,7 @@ export function ContentProvider({ children }) {
 
   // Save to local storage whenever data changes
   useEffect(() => {
-    localStorage.setItem('bloghub_content_v2', JSON.stringify(data));
+    localStorage.setItem('bloghub_content_v3', JSON.stringify(data));
   }, [data]);
 
   const addPost = (newPost) => {
