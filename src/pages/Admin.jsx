@@ -252,6 +252,82 @@ export default function Admin() {
   const categoryName = data.categories.find(c => c.id === postData.categoryId)?.name || '정보';
   const solutionSteps = postData.solution ? postData.solution.split('\n').filter(Boolean) : [];
 
+  const handleCopyTistoryHtml = () => {
+    if (!postData.title) {
+      alert("제목을 먼저 입력해주세요!");
+      return;
+    }
+    
+    let html = `
+      <div style="font-family: 'Noto Sans KR', sans-serif; color: #333; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+        <h1 style="font-size: 24px; color: #111; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px;">
+          ${postData.title}
+        </h1>
+    `;
+    
+    if (postData.thumbnailUrl) {
+      html += `<img src="${postData.thumbnailUrl}" style="width: 100%; border-radius: 12px; margin-bottom: 20px;" alt="썸네일" />`;
+    }
+    
+    html += `
+        <blockquote style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px 20px; margin: 0 0 30px 0; border-radius: 0 8px 8px 0; color: #475569;">
+          <strong>💡 핵심 요약</strong><br/>
+          ${postData.summary || ''}
+        </blockquote>
+
+        <h2 style="font-size: 20px; color: #1e293b; margin-top: 30px; margin-bottom: 15px;">
+          <span style="background-color: #4f46e5; color: white; border-radius: 4px; padding: 2px 8px; font-size: 14px; margin-right: 8px;">1</span> 🚨 문제 및 원인
+        </h2>
+        <div style="background-color: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+          <p style="margin-top: 0;"><strong>문제 상황:</strong><br/>${postData.problem.replace(/\n/g, '<br/>')}</p>
+          <p style="margin-bottom: 0; margin-top: 15px;"><strong>원인 분석:</strong><br/>${postData.cause.replace(/\n/g, '<br/>')}</p>
+        </div>
+
+        <h2 style="font-size: 20px; color: #1e293b; margin-top: 30px; margin-bottom: 15px;">
+          <span style="background-color: #4f46e5; color: white; border-radius: 4px; padding: 2px 8px; font-size: 14px; margin-right: 8px;">2</span> 🚀 해결 비법
+        </h2>
+        <div style="margin-bottom: 30px;">
+          ${solutionSteps.map((s, i) => `
+            <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+              <strong style="color: #4f46e5;">Step ${i+1}.</strong> ${s.replace(/\n/g, '<br/>')}
+            </div>
+          `).join('')}
+        </div>
+
+        <h2 style="font-size: 20px; color: #1e293b; margin-top: 30px; margin-bottom: 15px;">
+          <span style="background-color: #4f46e5; color: white; border-radius: 4px; padding: 2px 8px; font-size: 14px; margin-right: 8px;">3</span> 💡 에디터 특급 꿀팁
+        </h2>
+        <div style="background-color: #fefce8; border: 1px solid #fef08a; padding: 20px; border-radius: 12px; margin-bottom: 30px; color: #854d0e;">
+          ${postData.tips.replace(/\n/g, '<br/>')}
+        </div>
+        
+        <p style="font-size: 16px; font-weight: bold; text-align: center; color: #0f172a; padding: 20px; border-top: 1px dashed #cbd5e1; border-bottom: 1px dashed #cbd5e1; margin-bottom: 40px;">
+          ✨ ${postData.conclusion}
+        </p>
+    `;
+
+    if (postData.recommendationName && postData.recommendationUrl) {
+      html += `
+        <div style="text-align: center; margin: 40px 0; background-color: #f8fafc; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 12px; color: #ef4444; font-weight: bold; margin-bottom: 5px;">🔥 지금 할인 중인 추천 아이템!</div>
+          <div style="font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1e293b;">${postData.recommendationName} <span style="color: #3b82f6;">(${postData.recommendationPrice})</span></div>
+          <a href="${postData.recommendationUrl}" target="_blank" style="display: inline-block; background-color: #ef4444; color: white; text-decoration: none; padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 50px; box-shadow: 0 4px 6px rgba(239,68,68,0.3);">
+            🚀 최저가 확인하러 가기
+          </a>
+          <p style="font-size: 11px; color: #94a3b8; margin-top: 20px;">이 포스팅은 제휴 마케팅이 포함되어 있으며, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+        </div>
+      `;
+    }
+
+    html += `</div>`;
+
+    navigator.clipboard.writeText(html).then(() => {
+      alert("✅ 티스토리용 HTML이 복사되었습니다!\\n\\n티스토리 글쓰기 에디터에서 우측 상단의 '기본모드'를 'HTML'로 변경한 뒤 붙여넣기(Ctrl+V) 하세요.");
+    }).catch(err => {
+      alert("복사 실패: " + err);
+    });
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
@@ -502,6 +578,17 @@ export default function Admin() {
           <div className="hidden lg:block relative">
             <div className="sticky top-6 flex flex-col h-[calc(100vh-3rem)]">
               
+              {/* Tistory Copy Button */}
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-3xl shadow-lg mb-4 flex items-center justify-between shrink-0">
+                <div>
+                  <h3 className="text-white font-black text-lg flex items-center gap-2"><span>📝</span> 티스토리 자동 복사기</h3>
+                  <p className="text-orange-100 text-[11px] mt-0.5 font-medium">티스토리 HTML 모드에서 붙여넣기만 하세요!</p>
+                </div>
+                <button type="button" onClick={handleCopyTistoryHtml} className="bg-white text-orange-600 font-black px-4 py-2.5 rounded-xl shadow-sm hover:scale-105 hover:shadow-md transition transform text-sm">
+                  📋 HTML 1초 복사
+                </button>
+              </div>
+
               {/* 1. SEO Meta Preview */}
               <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 mb-6 shrink-0">
                 <div className="flex items-center justify-between mb-3">

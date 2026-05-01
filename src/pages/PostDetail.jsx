@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SeoHelmet from '../components/SeoHelmet';
 import AdPlaceholder from '../components/AdPlaceholder';
@@ -6,6 +6,36 @@ import ProductCard from '../components/ProductCard';
 import PostCard from '../components/PostCard';
 import { affiliateProducts } from '../data/affiliateProducts';
 import { useContent } from '../contexts/ContentContext';
+
+const ScrollProgressBar = () => {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalScroll = document.documentElement.scrollTop || document.body.scrollTop;
+          const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          if (windowHeight > 0) {
+            setScrollProgress((totalScroll / windowHeight) * 100);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div 
+      className="fixed top-0 left-0 h-1.5 bg-indigo-600 z-[100] transition-all duration-150 ease-out" 
+      style={{ width: `${scrollProgress}%` }}
+    ></div>
+  );
+};
 
 export default function PostDetail() {
   const { slug } = useParams();
