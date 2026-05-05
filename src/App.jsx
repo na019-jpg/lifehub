@@ -18,6 +18,7 @@ function App() {
           <Route path="/post/:slug" element={<PostDetail />} />
           <Route path="/policy/:type" element={<PolicyPage />} />
           <Route path="/secret-hub" element={<Admin />} />
+          <Route path="*" element={<div className="flex items-center justify-center min-h-[60vh] font-bold text-slate-400">404: 페이지를 찾을 수 없습니다.</div>} />
         </Routes>
       </div>
       
@@ -39,6 +40,8 @@ function App() {
         <p>© {new Date().getFullYear()} LifeHub. 당신의 일상을 이롭게 하는 프리미엄 생활 정보 매거진.</p>
         <div className="mt-4 text-xs text-slate-400 flex items-center justify-center gap-4">
           <span>Powered by React & TailwindCSS</span>
+          <span className="text-slate-200">|</span>
+          <Link to="/secret-hub" className="text-slate-300 hover:text-slate-500 transition">Admin</Link>
         </div>
       </footer>
     </div>

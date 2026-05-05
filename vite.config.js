@@ -50,4 +50,9 @@ function autoDeployPlugin() {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), autoDeployPlugin()],
+  server: {
+    port: 5173,
+    strictPort: true,
+    open: true
+  }
 })

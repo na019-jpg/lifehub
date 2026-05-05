@@ -14,6 +14,10 @@ export default function Admin() {
   const [lookerUrl, setLookerUrl] = useState(localStorage.getItem('looker_studio_url') || '');
   const [tempLookerUrl, setTempLookerUrl] = useState('');
 
+  React.useEffect(() => {
+    console.log("✅ Admin Dashboard Loaded Successfully");
+  }, []);
+
   const saveLookerUrl = () => {
     localStorage.setItem('looker_studio_url', tempLookerUrl);
     setLookerUrl(tempLookerUrl);
