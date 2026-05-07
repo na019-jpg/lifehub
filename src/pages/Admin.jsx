@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useContent } from '../contexts/ContentContext';
 import SeoHelmet from '../components/SeoHelmet';
+import { generateTistoryPost } from '../utils/gemini';
 
 export default function Admin() {
   const { data, addPost, updatePost, deletePost } = useContent();
@@ -13,6 +14,35 @@ export default function Admin() {
   // Looker Studio State
   const [lookerUrl, setLookerUrl] = useState(localStorage.getItem('looker_studio_url') || '');
   const [tempLookerUrl, setTempLookerUrl] = useState('');
+
+  // Tistory AI State
+  const [tistoryKeyword, setTistoryKeyword] = useState('');
+  const [tistoryAiLoading, setTistoryAiLoading] = useState(false);
+  const [tistoryAiResult, setTistoryAiResult] = useState(null);
+
+  const handleGenerateTistoryAi = async () => {
+    if (!tistoryKeyword.trim()) {
+      alert('키워드를 입력해주세요.');
+      return;
+    }
+    setTistoryAiLoading(true);
+    setTistoryAiResult(null);
+    try {
+      const result = await generateTistoryPost(tistoryKeyword);
+      setTistoryAiResult(result);
+    } catch (err) {
+      alert("AI 생성 실패: " + err.message);
+    } finally {
+      setTistoryAiLoading(false);
+    }
+  };
+
+  const handleCopyTistoryAiHtml = () => {
+    if (!tistoryAiResult) return;
+    navigator.clipboard.writeText(tistoryAiResult.htmlContent).then(() => {
+      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!");
+    }).catch(err => alert("복사 실패: " + err));
+  };
 
   React.useEffect(() => {
     console.log("✅ Admin Dashboard Loaded Successfully");
@@ -359,17 +389,94 @@ export default function Admin() {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-2 mb-8 bg-slate-200 p-1 rounded-2xl">
-        <button onClick={() => setActiveTab('write')} className={`flex-1 py-3 rounded-xl font-bold transition-colors ${activeTab === 'write' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+      <div className="flex space-x-2 mb-8 bg-slate-200 p-1 rounded-2xl overflow-x-auto">
+        <button onClick={() => setActiveTab('write')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'write' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
           📝 작성 및 실시간 미리보기
         </button>
-        <button onClick={() => setActiveTab('manage')} className={`flex-1 py-3 rounded-xl font-bold transition-colors ${activeTab === 'manage' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+        <button onClick={() => setActiveTab('manage')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'manage' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
           📚 발행 관리
         </button>
-        <button onClick={() => setActiveTab('analytics')} className={`flex-1 py-3 rounded-xl font-bold transition-colors ${activeTab === 'analytics' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+        <button onClick={() => setActiveTab('tistory')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'tistory' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
+          📝 티스토리 AI
+        </button>
+        <button onClick={() => setActiveTab('analytics')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'analytics' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
           📊 방문자 통계 UI
         </button>
       </div>
+
+      {activeTab === 'tistory' && (
+        <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm min-h-[600px] animate-fade-in">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-black text-slate-800 mb-2 flex items-center gap-2">
+              <span className="text-3xl">✨</span> 티스토리 전용 3050 고단가 포스팅 생성기
+            </h2>
+            <p className="text-slate-500 font-medium mb-8">
+              입력한 키워드를 바탕으로 구글 애드센스 고수익(High CPC) 타겟의 HTML 문서(1,500자 이상)를 자동 생성합니다.<br/>
+              본 웹사이트의 데이터와는 전혀 무관하게 독립적으로 작동합니다.
+            </p>
+
+            <div className="flex gap-3 mb-8">
+              <input 
+                type="text" 
+                value={tistoryKeyword}
+                onChange={(e) => setTistoryKeyword(e.target.value)}
+                placeholder="키워드 또는 주제를 입력하세요 (예: 임플란트, 주택담보대출, 실업급여 등)"
+                className="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition font-bold"
+                onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
+              />
+              <button 
+                onClick={handleGenerateTistoryAi}
+                disabled={tistoryAiLoading}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-4 rounded-2xl shadow-lg transition disabled:bg-slate-300 shrink-0"
+              >
+                {tistoryAiLoading ? '생성 중...' : '포스팅 생성'}
+              </button>
+            </div>
+
+            {tistoryAiLoading && (
+              <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">AI가 3050 타겟 고단가 포스팅을 작성 중입니다...</h3>
+                <p className="text-slate-500 font-medium text-sm">약 1~2분 정도 소요될 수 있습니다. 창을 닫지 마세요.</p>
+              </div>
+            )}
+
+            {!tistoryAiLoading && tistoryAiResult && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <h4 className="font-black text-blue-800 mb-3 flex items-center gap-1.5"><span>📈</span> 키워드 & 예상 단가 분석</h4>
+                    <p className="text-sm text-blue-900 leading-relaxed font-medium">{tistoryAiResult.keywordAnalysis}</p>
+                  </div>
+                  <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
+                    <h4 className="font-black text-amber-800 mb-3 flex items-center gap-1.5"><span>💰</span> 수익화(광고) 배치 가이드</h4>
+                    <p className="text-sm text-amber-900 leading-relaxed font-medium">{tistoryAiResult.adPlacementGuide}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                  <h4 className="font-black text-slate-800 mb-3 text-sm">📌 생성된 제목</h4>
+                  <div className="bg-white p-4 rounded-xl font-bold text-slate-800 border border-slate-100 shadow-sm">{tistoryAiResult.title}</div>
+                </div>
+
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-black text-slate-800">💻 생성된 HTML 본문 (티스토리용)</h4>
+                    <button onClick={handleCopyTistoryAiHtml} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition">
+                      📋 전체 HTML 복사
+                    </button>
+                  </div>
+                  <textarea 
+                    readOnly 
+                    value={tistoryAiResult.htmlContent} 
+                    className="w-full h-96 p-5 bg-slate-900 text-emerald-400 font-mono text-sm rounded-xl outline-none shadow-inner"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {activeTab === 'analytics' && (
         <section className="space-y-6 animate-fade-in">
