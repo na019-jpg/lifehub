@@ -1,4 +1,56 @@
 {
+  "toolCategories": [
+    {
+      "id": "career",
+      "name": "직장인 및 커리어",
+      "icon": "👔",
+      "description": "연차, 수당, 이직 등 커리어 최적화 도구"
+    },
+    {
+      "id": "finance",
+      "name": "가계 및 자산 관리",
+      "icon": "💰",
+      "description": "구독료, 대출, 생활 물가 비교 도구"
+    },
+    {
+      "id": "lifestyle",
+      "name": "육아 및 살림",
+      "icon": "🏠",
+      "description": "아이 발달, 지원금, 유통기한 관리 도구"
+    },
+    {
+      "id": "ai",
+      "name": "AI 및 업무 자동화",
+      "icon": "🤖",
+      "description": "API 비용, 프롬프트 최적화 도구"
+    }
+  ],
+  "tools": [
+    {
+      "id": "vacation-calc",
+      "categoryId": "career",
+      "name": "연차/휴가 계산기",
+      "description": "입사일 기준 남은 연차와 수당을 정확히 계산합니다.",
+      "path": "/tools/vacation-calc",
+      "icon": "📅"
+    },
+    {
+      "id": "loan-calc",
+      "categoryId": "finance",
+      "name": "대출 이자 계산기",
+      "description": "대출 이자와 중도상환 수수료를 즉시 계산합니다.",
+      "path": "/tools/loan-calc",
+      "icon": "📉"
+    },
+    {
+      "id": "child-growth-calc",
+      "categoryId": "lifestyle",
+      "name": "아이 발달 상태 계산기",
+      "description": "개월수와 예방접종 시기를 자동으로 알려줍니다.",
+      "path": "/tools/child-growth-calc",
+      "icon": "👶"
+    }
+  ],
   "categories": [
     {
       "id": "clothing",
