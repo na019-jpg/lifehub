@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import SeoHelmet from '../../components/SeoHelmet';
+import ToolTabs from '../../components/ToolTabs';
 
 export default function VacationCalculator() {
   const [step, setStep] = useState(1);
@@ -40,21 +41,7 @@ export default function VacationCalculator() {
     <div className="bg-[#F8F9FA] min-h-screen pb-20 font-sans overflow-x-hidden">
       <SeoHelmet title="스마트 연차 계산기 | LifeHub Dashboard" description="게이지 차트로 남은 연차를 직관적으로 확인하세요." />
       
-      <div className="fixed top-0 left-0 w-full h-1.5 bg-slate-200 z-50">
-        <div className="h-full bg-[#2E7D32] transition-all duration-500" style={{ width: `${(step / 3) * 100}%` }} />
-      </div>
-
-      <header className="bg-white border-b border-slate-100 py-6 sticky top-1.5 z-40">
-        <div className="container mx-auto max-w-2xl px-6 flex justify-between items-center">
-          <Link to="/" className="text-slate-400 hover:text-[#1A237E] transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Link>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">VACATION · STEP {step}</span>
-          <div className="w-6"></div>
-        </div>
-      </header>
+      <ToolTabs activeCategory="career" />
 
       <main className="container mx-auto max-w-2xl px-6 py-12">
         <div className="min-h-[500px]">

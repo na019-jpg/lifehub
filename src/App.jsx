@@ -11,6 +11,8 @@ import LoanCalculator from './pages/tools/LoanCalculator';
 import ChildGrowthCalculator from './pages/tools/ChildGrowthCalculator';
 import WageCalculator from './pages/tools/WageCalculator';
 import TurnoverSimulator from './pages/tools/TurnoverSimulator';
+import SubscriptionManager from './pages/tools/SubscriptionManager';
+import UnitPriceChecker from './pages/tools/UnitPriceChecker';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           <Route path="/tools/wage-calc" element={<WageCalculator />} />
           <Route path="/tools/turnover-calc" element={<TurnoverSimulator />} />
           <Route path="/tools/loan-calc" element={<LoanCalculator />} />
+          <Route path="/tools/subscription-manager" element={<SubscriptionManager />} />
+          <Route path="/tools/unit-price-checker" element={<UnitPriceChecker />} />
           <Route path="/tools/child-growth-calc" element={<ChildGrowthCalculator />} />
           <Route path="*" element={<div className="flex items-center justify-center min-h-[60vh] font-bold text-slate-400">404: 페이지를 찾을 수 없습니다.</div>} />
         </Routes>
