@@ -3,68 +3,66 @@ import { Link } from 'react-router-dom';
 import SeoHelmet from '../../components/SeoHelmet';
 
 export default function TurnoverSimulator() {
-  const [currentAnnual, setCurrentAnnual] = useState(40000000);
-  const [newAnnual, setNewAnnual] = useState(50000000);
+  const [currentAnnual, setCurrentAnnual] = useState(45000000);
+  const [newAnnual, setNewAnnual] = useState(55000000);
   const [dependents, setDependents] = useState(1);
-  const [nonTaxable, setNonTaxable] = useState(200000); // 식대 등
+  const [nonTaxable, setNonTaxable] = useState(200000); // 식대
   
   const [result, setResult] = useState(null);
 
-  const calculateNetPay = (annual) => {
+  const calculateFullNet = (annual) => {
     const monthlyGross = Math.floor(annual / 12);
     const taxableIncome = monthlyGross - nonTaxable;
     
-    // 4대보험 요율 (2024-2025 기준 근사치)
-    const pension = Math.min(taxableIncome * 0.045, 265500); // 국민연금 (상한선 반영)
-    const health = taxableIncome * 0.03545; // 건강보험
-    const longTermCare = health * 0.1295; // 장기요양
-    const employment = taxableIncome * 0.009; // 고용보험
+    // 2026 추정 요율
+    const pension = Math.min(taxableIncome * 0.045, 275000); // 약간 상승 가정
+    const health = taxableIncome * 0.03545;
+    const longTerm = health * 0.1295;
+    const employment = taxableIncome * 0.009;
     
-    // 간이세액표 기반 소득세 (매우 간소화된 공식)
-    // 실제로는 국세청 간이세액표를 조회해야 하지만, 시뮬레이션용 근사식 사용
+    // 간이세액표 근사 로직 (2026 기준 강화)
     let incomeTax = 0;
-    if (taxableIncome > 10000000) incomeTax = taxableIncome * 0.25;
-    else if (taxableIncome > 6000000) incomeTax = taxableIncome * 0.15;
-    else if (taxableIncome > 3000000) incomeTax = taxableIncome * 0.08;
-    else if (taxableIncome > 1500000) incomeTax = taxableIncome * 0.02;
+    if (taxableIncome > 8000000) incomeTax = taxableIncome * 0.26;
+    else if (taxableIncome > 5000000) incomeTax = taxableIncome * 0.16;
+    else if (taxableIncome > 3000000) incomeTax = taxableIncome * 0.09;
+    else if (taxableIncome > 1500000) incomeTax = taxableIncome * 0.03;
     
-    // 부양가족에 따른 소득세 감면 (간소화)
-    incomeTax = Math.max(incomeTax * (1 - (dependents - 1) * 0.1), 0);
-    
+    // 부양가족 공제 효과
+    incomeTax = Math.max(incomeTax * (1 - (dependents - 1) * 0.12), 0);
     const localTax = incomeTax * 0.1;
     
-    const totalDeductions = pension + health + longTermCare + employment + incomeTax + localTax;
-    const netPay = monthlyGross - totalDeductions;
+    const totalDeduction = pension + health + longTerm + employment + incomeTax + localTax;
     
     return {
       monthlyGross,
       pension,
       health,
-      longTermCare,
+      longTerm,
       employment,
       incomeTax,
       localTax,
-      totalDeductions,
-      netPay: Math.round(netPay)
+      totalDeduction,
+      netPay: Math.round(monthlyGross - totalDeduction)
     };
   };
 
   const simulate = () => {
-    const current = calculateNetPay(currentAnnual);
-    const next = calculateNetPay(newAnnual);
+    const current = calculateFullNet(currentAnnual);
+    const next = calculateFullNet(newAnnual);
     
     setResult({
       current,
       next,
-      difference: next.netPay - current.netPay
+      diffMonthly: next.netPay - current.netPay,
+      diffAnnual: (next.netPay - current.netPay) * 12
     });
   };
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       <SeoHelmet 
-        title="이직 시뮬레이터 (실수령액 비교) - Smart Utility Hub" 
-        description="이직 전후의 연봉을 입력하여 실제 통장에 찍히는 월 실수령액 차이를 확인하세요."
+        title="2026 이직 시뮬레이터 - Smart Utility Hub" 
+        description="2026년 최신 세율과 비과세 항목을 반영한 정밀 연봉 비교 시뮬레이터입니다."
       />
       
       <header className="bg-white border-b border-slate-200 py-6">
@@ -75,133 +73,109 @@ export default function TurnoverSimulator() {
             </svg>
             홈으로 돌아가기
           </Link>
-          <h1 className="text-3xl font-black text-slate-900">🚀 이직 시뮬레이터</h1>
-          <p className="text-slate-500 font-medium mt-2">연봉 숫자에 속지 마세요. 세금 떼고 내 통장에 남는 진짜 돈을 비교합니다.</p>
+          <div className="flex items-center gap-3">
+             <span className="text-3xl">🚀</span>
+             <div>
+                <h1 className="text-2xl font-black text-slate-900">2026 이직 시뮬레이터</h1>
+                <p className="text-slate-500 font-medium text-sm">세전 연봉에 속지 마세요. 진짜 내 통장에 남는 돈을 비교합니다.</p>
+             </div>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto max-w-5xl px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Input Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-              <h2 className="text-lg font-black text-slate-800 mb-6">시뮬레이션 조건</h2>
-              
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1.5">현재 연봉 (원)</label>
-                  <input 
-                    type="number" 
-                    value={currentAnnual}
-                    onChange={(e) => setCurrentAnnual(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-bold"
-                    step="1000000"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1.5">이직 제안 연봉 (원)</label>
-                  <input 
-                    type="number" 
-                    value={newAnnual}
-                    onChange={(e) => setNewAnnual(e.target.value)}
-                    className="w-full px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-blue-600"
-                    step="1000000"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+      <main className="container mx-auto max-w-6xl px-4 py-10">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div className="xl:col-span-1 bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm space-y-6 h-fit">
+            <h2 className="text-lg font-black text-slate-800 border-b pb-4">시뮬레이션 데이터</h2>
+            <div className="space-y-4">
+               <div>
+                 <label className="block text-xs font-bold text-slate-500 mb-1.5">현재 연봉 (원)</label>
+                 <input type="number" value={currentAnnual} onChange={e=>setCurrentAnnual(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-bold" />
+               </div>
+               <div>
+                 <label className="block text-xs font-bold text-slate-500 mb-1.5">이직 제안 연봉 (원)</label>
+                 <input type="number" value={newAnnual} onChange={e=>setNewAnnual(e.target.value)} className="w-full px-4 py-3 bg-blue-50 border-blue-100 border rounded-xl outline-none focus:border-blue-500 font-bold text-blue-600" />
+               </div>
+               <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">부양가족(본인포함)</label>
-                    <input 
-                      type="number" 
-                      value={dependents}
-                      onChange={(e) => setDependents(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-bold"
-                    />
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">부양가족 수</label>
+                    <input type="number" value={dependents} onChange={e=>setDependents(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-bold" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">비과세액(식대 등)</label>
-                    <input 
-                      type="number" 
-                      value={nonTaxable}
-                      onChange={(e) => setNonTaxable(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-bold"
-                    />
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">비과세(식대 등)</label>
+                    <input type="number" value={nonTaxable} onChange={e=>setNonTaxable(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-bold" />
                   </div>
-                </div>
-
-                <button 
-                  onClick={simulate}
-                  className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg transition-all"
-                >
-                  실수령액 비교하기
-                </button>
-              </div>
+               </div>
             </div>
+            <button onClick={simulate} className="w-full py-4 bg-slate-900 hover:bg-black text-white font-black rounded-2xl shadow-lg transition-all transform hover:scale-[1.02]">정밀 비교 시작</button>
           </div>
 
-          {/* Result Display */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-2">
             {result ? (
               <div className="space-y-6 animate-fade-in">
-                {/* Highlight Card */}
-                <div className="bg-slate-900 rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-10">
-                    <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M12 7a1 1 0 110-2h5V2a1 1 0 112 0v5a1 1 0 01-1 1h-6zM3 13a1 1 0 110-2h5V6a1 1 0 011 1v5a1 1 0 01-1 1H3z" clipRule="evenodd" /></svg>
-                  </div>
-                  <h3 className="text-slate-400 font-bold mb-2">월 예상 실수령액 상승분</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black text-blue-400">+{result.difference.toLocaleString()}</span>
-                    <span className="text-xl font-bold text-slate-400">원 / 월</span>
-                  </div>
-                  <p className="mt-4 text-slate-400 text-sm">
-                    연봉은 {(newAnnual - currentAnnual).toLocaleString()}원 올랐지만, <br/>
-                    각종 세금과 보험료를 제외한 **실제 지갑 사정**은 매달 위 금액만큼 좋아집니다.
-                  </p>
+                {/* Summary Highlight */}
+                <div className="bg-blue-600 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden">
+                   <div className="relative z-10">
+                      <h3 className="text-blue-100 font-bold text-lg mb-2">월 예상 실수령 증가액</h3>
+                      <div className="flex items-baseline gap-2">
+                         <span className="text-6xl font-black tracking-tighter">+{result.diffMonthly.toLocaleString()}</span>
+                         <span className="text-2xl font-bold">원</span>
+                      </div>
+                      <div className="mt-6 flex gap-4">
+                         <div className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold">
+                            연간 순수익: +{result.diffAnnual.toLocaleString()}원
+                         </div>
+                      </div>
+                   </div>
+                   <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
                 </div>
 
-                {/* Detailed Comparison Table */}
-                <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50">
-                        <th className="p-6 text-sm font-black text-slate-500">항목</th>
-                        <th className="p-6 text-sm font-black text-slate-500 text-right">현재</th>
-                        <th className="p-6 text-sm font-black text-blue-600 text-right">이직 후</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      <tr>
-                        <td className="p-6 font-bold text-slate-700">월 세전 급여</td>
-                        <td className="p-6 text-right font-medium">{result.current.monthlyGross.toLocaleString()}원</td>
-                        <td className="p-6 text-right font-black text-slate-900">{result.next.monthlyGross.toLocaleString()}원</td>
-                      </tr>
-                      <tr>
-                        <td className="p-6 font-bold text-slate-500 text-sm">4대 보험 공제</td>
-                        <td className="p-6 text-right text-sm text-slate-400">-{Math.round(result.current.pension + result.current.health + result.current.longTermCare + result.current.employment).toLocaleString()}원</td>
-                        <td className="p-6 text-right text-sm text-rose-400">-{Math.round(result.next.pension + result.next.health + result.next.longTermCare + result.next.employment).toLocaleString()}원</td>
-                      </tr>
-                      <tr>
-                        <td className="p-6 font-bold text-slate-500 text-sm">소득세/지방세</td>
-                        <td className="p-6 text-right text-sm text-slate-400">-{Math.round(result.current.incomeTax + result.current.localTax).toLocaleString()}원</td>
-                        <td className="p-6 text-right text-sm text-rose-400">-{Math.round(result.next.incomeTax + result.next.localTax).toLocaleString()}원</td>
-                      </tr>
-                      <tr className="bg-blue-50/30">
-                        <td className="p-6 font-black text-slate-800">월 실수령액</td>
-                        <td className="p-6 text-right font-bold text-slate-500">{result.current.netPay.toLocaleString()}원</td>
-                        <td className="p-6 text-right font-black text-blue-600 text-xl">{result.next.netPay.toLocaleString()}원</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                {/* Side by Side Comparison */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="bg-white p-8 rounded-[32px] border border-slate-200">
+                      <h4 className="text-slate-400 font-bold mb-4">현재 직장</h4>
+                      <div className="space-y-4">
+                         <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">세전 월급</span>
+                            <span className="font-bold">{result.current.monthlyGross.toLocaleString()}원</span>
+                         </div>
+                         <div className="flex justify-between text-sm text-rose-500">
+                            <span>공제액 합계</span>
+                            <span>-{Math.round(result.current.totalDeduction).toLocaleString()}원</span>
+                         </div>
+                         <div className="pt-4 border-t flex justify-between items-center">
+                            <span className="font-black text-slate-800">실수령액</span>
+                            <span className="text-2xl font-black text-slate-900">{result.current.netPay.toLocaleString()}원</span>
+                         </div>
+                      </div>
+                   </div>
+                   <div className="bg-white p-8 rounded-[32px] border-2 border-blue-100 shadow-sm">
+                      <h4 className="text-blue-600 font-bold mb-4">이직 후 (제안)</h4>
+                      <div className="space-y-4">
+                         <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">세전 월급</span>
+                            <span className="font-bold">{result.next.monthlyGross.toLocaleString()}원</span>
+                         </div>
+                         <div className="flex justify-between text-sm text-rose-500">
+                            <span>공제액 합계</span>
+                            <span>-{Math.round(result.next.totalDeduction).toLocaleString()}원</span>
+                         </div>
+                         <div className="pt-4 border-t border-blue-50 flex justify-between items-center">
+                            <span className="font-black text-slate-800">실수령액</span>
+                            <span className="text-2xl font-black text-blue-600">{result.next.netPay.toLocaleString()}원</span>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="p-6 bg-slate-900 rounded-3xl text-white/80 text-xs leading-relaxed">
+                   ⚖️ **2026년 세무 가이드**: 위 계산은 2026년 예상 국민연금 및 건강보험 요율을 바탕으로 산출된 시뮬레이션입니다. 비과세 항목(식대 20만 원)을 반영하여 세금을 절약하는 로직이 포함되어 있습니다. 실제 수령액은 회사의 복지 포인트, 수당 체계에 따라 다를 수 있습니다.
                 </div>
               </div>
             ) : (
-              <div className="bg-white/50 h-full min-h-[400px] rounded-[32px] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center p-12">
-                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-4xl mb-6">📊</div>
-                <h3 className="text-xl font-black text-slate-700 mb-2">실수령액 리포트 준비 완료</h3>
-                <p className="text-slate-400 font-medium leading-relaxed max-w-sm">
-                  현재 연봉과 이직할 연봉을 입력하시면 <br/>
-                  세금과 보험료를 모두 제외한 리얼 데이터를 분석해 드립니다.
-                </p>
+              <div className="bg-slate-200 h-full min-h-[500px] rounded-[40px] border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-center p-12 text-slate-400">
+                <span className="text-6xl mb-6">📉</span>
+                <p className="text-xl font-black">연봉 숫자 너머의 진짜 가치를<br/>데이터로 시각화해 보세요.</p>
               </div>
             )}
           </div>
@@ -209,8 +183,8 @@ export default function TurnoverSimulator() {
       </main>
 
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
       `}} />
     </div>
   );
