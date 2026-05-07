@@ -4,21 +4,27 @@ import initialData from '../data/content.json';
 const ContentContext = createContext();
 
 export function ContentProvider({ children }) {
+  const STORAGE_KEY = 'lifehub_content_v4';
+  
   const [data, setData] = useState(() => {
-    const savedData = localStorage.getItem('bloghub_content_v3');
+    const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
         
         // --- 핵심 캐시 병합 로직 (서버 업데이트 반영) ---
-        // 브라우저 캐시에 없는 새로운 포스트가 서버(initialData)에 배포되었다면, 그것만 쏙 빼서 강제 병합합니다.
-        const existingIds = new Set(parsed.posts.map(p => p.id));
+        const existingIds = new Set((parsed.posts || []).map(p => p.id));
         const newPostsFromServer = initialData.posts.filter(p => !existingIds.has(p.id));
-        parsed.posts = [...newPostsFromServer, ...parsed.posts];
         
-        // 카테고리 구조 등은 무조건 최신 서버 구조를 강제 반영
-        parsed.categories = initialData.categories;
-        return parsed;
+        return {
+          ...initialData, // 최신 필드(tools, toolCategories 등) 기본값 확보
+          ...parsed,
+          posts: [...newPostsFromServer, ...(parsed.posts || [])],
+          // UI 구조 관련 필드는 무조건 최신 서버 구조를 강제 반영
+          categories: initialData.categories,
+          toolCategories: initialData.toolCategories,
+          tools: initialData.tools
+        };
       } catch (e) {
         console.error("Local storage data parsing error", e);
       }
@@ -28,7 +34,7 @@ export function ContentProvider({ children }) {
 
   // Save to local storage whenever data changes
   useEffect(() => {
-    localStorage.setItem('bloghub_content_v3', JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [data]);
 
   const addPost = (newPost) => {

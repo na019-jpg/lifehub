@@ -14,10 +14,8 @@ export default function NavBar() {
     navigate(`/?q=${encodeURIComponent(searchQuery)}`);
   };
 
-  // Filter categories that have at least 1 post
-  const activeCategories = data.categories.filter(category => 
-    data.posts.some(post => post.categoryId === category.id)
-  );
+  // Show all utility categories
+  const activeCategories = data.categories;
 
   return (
     <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">

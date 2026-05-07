@@ -2,25 +2,25 @@
   "toolCategories": [
     {
       "id": "career",
-      "name": "직장인 및 커리어",
+      "name": "직장인·커리어",
       "icon": "👔",
       "description": "연차, 수당, 이직 등 커리어 최적화 도구"
     },
     {
       "id": "finance",
-      "name": "가계 및 자산 관리",
+      "name": "가계·자산",
       "icon": "💰",
       "description": "구독료, 대출, 생활 물가 비교 도구"
     },
     {
       "id": "lifestyle",
-      "name": "육아 및 살림",
+      "name": "육아·살림",
       "icon": "🏠",
       "description": "아이 발달, 지원금, 유통기한 관리 도구"
     },
     {
       "id": "ai",
-      "name": "AI 및 업무 자동화",
+      "name": "AI·자동화",
       "icon": "🤖",
       "description": "API 비용, 프롬프트 최적화 도구"
     }
@@ -33,6 +33,22 @@
       "description": "입사일 기준 남은 연차와 수당을 정확히 계산합니다.",
       "path": "/tools/vacation-calc",
       "icon": "📅"
+    },
+    {
+      "id": "wage-calc",
+      "categoryId": "career",
+      "name": "통상임금 및 수당 계산기",
+      "description": "연장·야간·휴일 수당 등 정확한 통상임금을 계산합니다.",
+      "path": "/tools/wage-calc",
+      "icon": "💰"
+    },
+    {
+      "id": "turnover-calc",
+      "categoryId": "career",
+      "name": "이직 시뮬레이터",
+      "description": "연봉 협상 시 필수! 이직 후 실제 월 실수령액을 비교하세요.",
+      "path": "/tools/turnover-calc",
+      "icon": "🚀"
     },
     {
       "id": "loan-calc",
@@ -53,89 +69,28 @@
   ],
   "categories": [
     {
-      "id": "clothing",
-      "name": "의생활 및 의류 관리",
-      "icon": "👕",
-      "subcategories": [
-        "세탁 전문 기술",
-        "수선 및 리폼",
-        "의류 보관",
-        "구매 및 스타일링"
-      ]
+      "id": "career",
+      "name": "직장인·커리어",
+      "icon": "👔",
+      "subcategories": ["연차", "수당", "이직", "근로계약"]
     },
     {
-      "id": "food",
-      "name": "식생활 및 주방 관리",
-      "icon": "🍳",
-      "subcategories": [
-        "식재료 아카이브",
-        "주방 위생",
-        "식비 절약",
-        "조리 도구"
-      ]
-    },
-    {
-      "id": "housing",
-      "name": "주거 및 홈케어",
-      "icon": "🏠",
-      "subcategories": [
-        "청소의 정석",
-        "셀프 집수리",
-        "해충 및 방역",
-        "공간 효율화"
-      ]
-    },
-    {
-      "id": "health",
-      "name": "건강 및 라이프 케어",
-      "icon": "💊",
-      "subcategories": [
-        "상비약 및 응급처치",
-        "수면 공학",
-        "홈 트레이닝",
-        "멘탈 케어"
-      ]
-    },
-    {
-      "id": "economy",
-      "name": "경제 및 행정",
+      "id": "finance",
+      "name": "가계·자산",
       "icon": "💰",
-      "subcategories": [
-        "정부 혜택 알림",
-        "세금 및 서류",
-        "스마트 금융",
-        "소비 방어"
-      ]
+      "subcategories": ["대출", "구독", "적금", "세금"]
     },
     {
-      "id": "digital",
-      "name": "디지털 및 IT 활용",
-      "icon": "💻",
-      "subcategories": [
-        "기기 관리",
-        "보안 및 개인정보",
-        "생산성 툴",
-        "디지털 에티켓"
-      ]
+      "id": "lifestyle",
+      "name": "육아·살림",
+      "icon": "🏠",
+      "subcategories": ["발달", "정부지원", "유통기한"]
     },
     {
-      "id": "travel",
-      "name": "여행 및 모빌리티",
-      "icon": "✈️",
-      "subcategories": [
-        "스마트 여행",
-        "차량 관리",
-        "대중교통 활용"
-      ]
-    },
-    {
-      "id": "pets",
-      "name": "반려 생활 및 식물",
-      "icon": "🐾",
-      "subcategories": [
-        "반려동물",
-        "플랜테리어"
-      ]
+      "id": "ai",
+      "name": "AI·자동화",
+      "icon": "🤖",
+      "subcategories": ["프롬프트", "API비용", "이미지생성"]
     }
   ],
   "posts": [
