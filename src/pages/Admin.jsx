@@ -443,13 +443,17 @@ export default function Admin() {
 
             {!tistoryAiLoading && tistoryAiResult && (
               <div className="space-y-6 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                    <h4 className="font-black text-blue-800 mb-3 flex items-center gap-1.5"><span>📈</span> 키워드 & 예상 단가 분석</h4>
+                    <h4 className="font-black text-blue-800 mb-3 flex items-center gap-1.5"><span>📈</span> 키워드 분석</h4>
                     <p className="text-sm text-blue-900 leading-relaxed font-medium">{tistoryAiResult.keywordAnalysis}</p>
                   </div>
+                  <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                    <h4 className="font-black text-emerald-800 mb-3 flex items-center gap-1.5"><span>🤖</span> AEO 최적화 전략</h4>
+                    <p className="text-sm text-emerald-900 leading-relaxed font-medium">{tistoryAiResult.aeoStrategy}</p>
+                  </div>
                   <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
-                    <h4 className="font-black text-amber-800 mb-3 flex items-center gap-1.5"><span>💰</span> 수익화(광고) 배치 가이드</h4>
+                    <h4 className="font-black text-amber-800 mb-3 flex items-center gap-1.5"><span>💰</span> 광고 배치 가이드</h4>
                     <p className="text-sm text-amber-900 leading-relaxed font-medium">{tistoryAiResult.adPlacementGuide}</p>
                   </div>
                 </div>
