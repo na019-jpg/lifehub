@@ -8,10 +8,18 @@ export default function TurnoverSimulator() {
   const [target, setTarget] = useState({ annual: 55000000, bonus: 500000, commuteMin: 60, commuteCost: 150000 });
   const [nonTaxable, setNonTaxable] = useState(200000);
 
+  // --- Helpers ---
+  const formatValue = (val) => Number(val).toLocaleString();
+  const stripCommas = (str) => str.toString().replace(/,/g, '');
+  const handleMoneyInput = (val, setter, obj, key) => {
+    const raw = stripCommas(val);
+    if (!isNaN(raw) || raw === '') setter({ ...obj, [key]: raw });
+  };
+
   // --- Calculation Logic ---
   const analyze = (data) => {
-    const monthlyGross = Math.floor(data.annual / 12);
-    const taxable = monthlyGross - nonTaxable;
+    const monthlyGross = Math.floor(Number(data.annual) / 12);
+    const taxable = monthlyGross - Number(nonTaxable);
     const deductions = taxable * 0.18; // Simplified for live preview
     const netMonthly = monthlyGross - deductions;
     const hourlyRate = netMonthly / 209;
@@ -19,8 +27,8 @@ export default function TurnoverSimulator() {
     return { netMonthly, timeValue, totalValue: netMonthly - timeValue - Number(data.commuteCost) };
   };
 
-  const currentStats = useMemo(() => analyze(current), [current]);
-  const targetStats = useMemo(() => analyze(target), [target]);
+  const currentStats = useMemo(() => analyze(current), [current, nonTaxable]);
+  const targetStats = useMemo(() => analyze(target), [target, nonTaxable]);
   const netDiff = targetStats.netMonthly - currentStats.netMonthly;
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
@@ -73,9 +81,9 @@ export default function TurnoverSimulator() {
                     <div>
                       <label className="text-xs font-black text-slate-400 uppercase mb-2 block tracking-widest">현재 세전 연봉 (원)</label>
                       <input 
-                        type="number" 
-                        value={current.annual}
-                        onChange={e => setCurrent({...current, annual: e.target.value})}
+                        type="text" 
+                        value={formatValue(current.annual)}
+                        onChange={e => handleMoneyInput(e.target.value, setCurrent, current, 'annual')}
                         className="w-full text-4xl font-black text-[#1A237E] bg-transparent border-b-2 border-slate-100 focus:border-[#1A237E] outline-none pb-2 transition-all"
                         placeholder="0"
                       />
@@ -84,9 +92,9 @@ export default function TurnoverSimulator() {
                       <div>
                         <label className="text-xs font-black text-slate-400 uppercase mb-2 block tracking-widest">월 출퇴근 비용</label>
                         <input 
-                          type="number" 
-                          value={current.commuteCost}
-                          onChange={e => setCurrent({...current, commuteCost: e.target.value})}
+                          type="text" 
+                          value={formatValue(current.commuteCost)}
+                          onChange={e => handleMoneyInput(e.target.value, setCurrent, current, 'commuteCost')}
                           className="w-full text-xl font-black text-slate-900 border-b border-slate-100 focus:border-[#1A237E] outline-none pb-1"
                         />
                       </div>
@@ -122,16 +130,16 @@ export default function TurnoverSimulator() {
                     <div>
                       <label className="text-xs font-black text-slate-400 uppercase mb-2 block tracking-widest">제안받은 세전 연봉 (원)</label>
                       <input 
-                        type="number" 
-                        value={target.annual}
-                        onChange={e => setTarget({...target, annual: e.target.value})}
+                        type="text" 
+                        value={formatValue(target.annual)}
+                        onChange={e => handleMoneyInput(e.target.value, setTarget, target, 'annual')}
                         className="w-full text-4xl font-black text-[#2E7D32] bg-transparent border-b-2 border-slate-100 focus:border-[#2E7D32] outline-none pb-2 transition-all"
                         autoFocus
                       />
                     </div>
                     <div className="p-4 bg-[#E8F5E9] rounded-2xl flex items-center justify-between border border-[#A5D6A7]">
                        <span className="text-xs font-bold text-[#2E7D32]">현재보다 세후 월</span>
-                       <span className="text-lg font-black text-[#2E7D32]">+{netDiff.toLocaleString()}원</span>
+                       <span className="text-lg font-black text-[#2E7D32]">+{formatValue(netDiff)}원</span>
                     </div>
                   </div>
                 </div>
@@ -159,7 +167,7 @@ export default function TurnoverSimulator() {
                       <input type="range" min="0" max="300000" step="50000" value={nonTaxable} onChange={e=>setNonTaxable(e.target.value)} className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#2E7D32]" />
                       <div className="flex justify-between mt-2 font-black text-[#1A237E] text-sm">
                         <span>0원</span>
-                        <span>{Number(nonTaxable).toLocaleString()}원</span>
+                        <span>{formatValue(nonTaxable)}원</span>
                       </div>
                    </div>
                 </div>
@@ -202,8 +210,8 @@ export default function TurnoverSimulator() {
 
                   <div className="p-6 bg-[#F8F9FA] rounded-3xl border border-slate-100">
                      <p className="text-sm font-medium leading-relaxed text-slate-600 text-center">
-                        "실수령액 기준 월 <span className="text-[#2E7D32] font-black">{netDiff.toLocaleString()}원</span>의 가치가 상승하지만, 
-                        통근 기회비용을 고려한 순 가치 변화는 <span className="text-[#1A237E] font-black">{Math.round(targetStats.totalValue - currentStats.totalValue).toLocaleString()}원</span>입니다."
+                        "실수령액 기준 월 <span className="text-[#2E7D32] font-black">{formatValue(netDiff)}원</span>의 가치가 상승하지만, 
+                        통근 기회비용을 고려한 순 가치 변화는 <span className="text-[#1A237E] font-black">{formatValue(Math.round(targetStats.totalValue - currentStats.totalValue))}원</span>입니다."
                      </p>
                   </div>
                </div>

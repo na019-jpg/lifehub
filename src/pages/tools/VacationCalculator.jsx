@@ -10,6 +10,8 @@ export default function VacationCalculator() {
   const [leaveType, setLeaveType] = useState('none');
   const [leaveDays, setLeaveDays] = useState(0);
 
+  const formatValue = (val) => Number(val).toLocaleString();
+
   const result = useMemo(() => {
     if (!joinDate) return null;
     const today = new Date();
@@ -140,15 +142,15 @@ export default function VacationCalculator() {
                         />
                      </svg>
                      <div className="absolute bottom-0 text-center">
-                        <span className="text-5xl font-black text-[#1A237E]">{result.remaining}</span>
-                        <span className="text-sm font-bold text-slate-400 ml-1">/ {result.total}일</span>
+                        <span className="text-5xl font-black text-[#1A237E]">{formatValue(result.remaining)}</span>
+                        <span className="text-sm font-bold text-slate-400 ml-1">/ {formatValue(result.total)}일</span>
                      </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 w-full">
                      <div className="p-4 bg-[#F8F9FA] rounded-2xl border border-slate-100 text-center">
                         <span className="text-[10px] font-black text-slate-400 block mb-1 uppercase tracking-tighter">근속 연수</span>
-                        <span className="text-lg font-black text-[#1A237E]">{result.years}년차</span>
+                        <span className="text-lg font-black text-[#1A237E]">{formatValue(result.years)}년차</span>
                      </div>
                      <div className="p-4 bg-[#F8F9FA] rounded-2xl border border-slate-100 text-center">
                         <span className="text-[10px] font-black text-slate-400 block mb-1 uppercase tracking-tighter">다음 가산일</span>

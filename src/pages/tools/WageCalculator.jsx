@@ -13,6 +13,14 @@ export default function WageCalculator() {
   const [actualHours, setActualHours] = useState({ overtime: 0, night: 0, holiday: 0 });
   const [receivedPay, setReceivedPay] = useState(0);
 
+  // --- Helpers ---
+  const formatValue = (val) => Number(val).toLocaleString();
+  const stripCommas = (str) => str.toString().replace(/,/g, '');
+  const handleMoneyInput = (val, setter, currentVal) => {
+    const raw = stripCommas(val);
+    if (!isNaN(raw) || raw === '') setter(raw);
+  };
+
   // --- Calculation Logic ---
   const calculation = useMemo(() => {
     const totalOrdinary = Number(baseSalary) + allowances
@@ -28,7 +36,6 @@ export default function WageCalculator() {
                      (Number(actualHours.holiday) * hourly * multiplier);
     
     const diff = shouldPay - Number(receivedPay);
-    // Benchmark logic: Minimum wage 2026 is approx 10,030 (placeholder)
     const minWage = 10030;
     const benchmarkRatio = Math.min((hourly / (minWage * 3)) * 100, 100);
 
@@ -76,9 +83,9 @@ export default function WageCalculator() {
                  <div>
                     <label className="text-xs font-black text-slate-400 uppercase mb-2 block tracking-widest">월 기본급 (원)</label>
                     <input 
-                      type="number" 
-                      value={baseSalary} 
-                      onChange={e=>setBaseSalary(e.target.value)} 
+                      type="text" 
+                      value={formatValue(baseSalary)} 
+                      onChange={e=>handleMoneyInput(e.target.value, setBaseSalary)} 
                       className="w-full text-4xl font-black text-[#1A237E] border-b-2 border-slate-100 focus:border-[#1A237E] outline-none pb-2 transition-all"
                     />
                  </div>
@@ -117,9 +124,21 @@ export default function WageCalculator() {
               <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 space-y-6">
                  {allowances.map((a, idx) => (
                     <div key={a.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group hover:bg-slate-100 transition-colors">
-                       <div>
+                       <div className="flex-1">
                           <span className="font-bold text-slate-800">{a.name}</span>
-                          <span className="text-xs text-slate-400 block">{Number(a.amount).toLocaleString()}원</span>
+                          <input 
+                            type="text"
+                            value={formatValue(a.amount)}
+                            onChange={(e) => {
+                              const newArr = [...allowances];
+                              const raw = stripCommas(e.target.value);
+                              if (!isNaN(raw) || raw === '') {
+                                newArr[idx].amount = raw;
+                                setAllowances(newArr);
+                              }
+                            }}
+                            className="text-xs text-slate-400 block bg-transparent border-none outline-none w-full"
+                          />
                        </div>
                        <button 
                          onClick={() => {
@@ -155,17 +174,22 @@ export default function WageCalculator() {
                     </div>
                     <div>
                       <label className="text-xs font-black text-slate-400 mb-2 block tracking-widest">실제 수당(원)</label>
-                      <input type="number" value={receivedPay} onChange={e=>setReceivedPay(e.target.value)} className="w-full text-2xl font-black text-slate-900 border-b border-slate-100 focus:border-[#2E7D32] outline-none pb-1 transition-all" />
+                      <input 
+                        type="text" 
+                        value={formatValue(receivedPay)} 
+                        onChange={e=>handleMoneyInput(e.target.value, setReceivedPay)} 
+                        className="w-full text-2xl font-black text-slate-900 border-b border-slate-100 focus:border-[#2E7D32] outline-none pb-1 transition-all" 
+                      />
                     </div>
                  </div>
                  
                  <div className="p-6 bg-[#1A237E] rounded-[32px] text-white shadow-xl">
                     <div className="flex justify-between items-center opacity-60 text-[10px] font-black mb-2 uppercase tracking-widest">
                        <span>Estimated Wage (Legal)</span>
-                       <span className="text-[#A5D6A7]">HOURLY: {Math.round(calculation.hourly).toLocaleString()}원</span>
+                       <span className="text-[#A5D6A7]">HOURLY: {formatValue(Math.round(calculation.hourly))}원</span>
                     </div>
                     <div className="text-3xl font-black tracking-tighter">
-                       {Math.round(calculation.shouldPay).toLocaleString()}원
+                       {formatValue(Math.round(calculation.shouldPay))}원
                     </div>
                  </div>
               </div>
@@ -202,7 +226,7 @@ export default function WageCalculator() {
                         >
                            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-white border-4 border-[#2E7D32] rounded-full shadow-md" />
                            <div className="absolute -top-10 right-0 translate-x-1/2 bg-[#2E7D32] text-white text-[10px] px-2 py-1 rounded font-bold whitespace-nowrap shadow-lg">
-                              나의 시급: {Math.round(calculation.hourly).toLocaleString()}원
+                              나의 시급: {formatValue(Math.round(calculation.hourly))}원
                            </div>
                         </div>
                      </div>
@@ -214,7 +238,7 @@ export default function WageCalculator() {
                      </div>
                      <p className="text-xs font-medium leading-relaxed opacity-80">
                         {calculation.isUnderpaid 
-                         ? `법정 기준 대비 약 ${Math.round(calculation.diff).toLocaleString()}원이 부족하게 지급되었습니다. 통상임금 범위와 가산율 1.5배 적용 여부를 인사팀에 문의해 보세요.` 
+                         ? `법정 기준 대비 약 ${formatValue(Math.round(calculation.diff))}원이 부족하게 지급되었습니다. 통상임금 범위와 가산율 1.5배 적용 여부를 인사팀에 문의해 보세요.` 
                          : `현재 시급은 법정 최저임금을 상회하며, 수당 계산이 올바르게 이루어지고 있습니다.`}
                      </p>
                   </div>
