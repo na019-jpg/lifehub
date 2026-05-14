@@ -228,18 +228,30 @@ export default function Admin() {
             {!tistoryAiLoading && tistoryAiResult && (
               <div className="space-y-6 animate-fade-in mt-8 pt-8 border-t border-slate-100">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
-                    <h4 className="font-black text-blue-800 mb-2 flex items-center gap-1.5 text-sm"><span>📈</span> 키워드 분석</h4>
-                    <p className="text-xs text-blue-900 leading-relaxed font-medium">{tistoryAiResult.keywordAnalysis}</p>
+                  <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-100 rounded-full opacity-50"></div>
+                    <h4 className="font-black text-blue-800 mb-2 flex items-center gap-1.5 text-sm relative z-10"><span>📈</span> 키워드 분석</h4>
+                    <p className="text-xs text-blue-900 leading-relaxed font-medium relative z-10">{tistoryAiResult.keywordAnalysis}</p>
                   </div>
-                  <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
-                    <h4 className="font-black text-emerald-800 mb-2 flex items-center gap-1.5 text-sm"><span>🤖</span> AEO 최적화</h4>
-                    <p className="text-xs text-emerald-900 leading-relaxed font-medium">{tistoryAiResult.aeoStrategy}</p>
+                  <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100 relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-100 rounded-full opacity-50"></div>
+                    <h4 className="font-black text-emerald-800 mb-2 flex items-center gap-1.5 text-sm relative z-10"><span>🤖</span> AEO 최적화</h4>
+                    <p className="text-xs text-emerald-900 leading-relaxed font-medium relative z-10">{tistoryAiResult.aeoStrategy}</p>
                   </div>
-                  <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100">
-                    <h4 className="font-black text-amber-800 mb-2 flex items-center gap-1.5 text-sm"><span>💰</span> 광고 배치</h4>
-                    <p className="text-xs text-amber-900 leading-relaxed font-medium">{tistoryAiResult.adPlacementGuide}</p>
+                  <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-100 rounded-full opacity-50"></div>
+                    <h4 className="font-black text-amber-800 mb-2 flex items-center gap-1.5 text-sm relative z-10"><span>💰</span> 광고 배치</h4>
+                    <p className="text-xs text-amber-900 leading-relaxed font-medium relative z-10">{tistoryAiResult.adPlacementGuide}</p>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-green-200 shadow-sm">
+                    <span>⚡</span> 구글 자동 색인 (JSON-LD) 탑재 완료
+                  </span>
+                  <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-orange-200 shadow-sm">
+                    <span>💸</span> 전면광고 유도 버튼 삽입 완료
+                  </span>
                 </div>
                 
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
