@@ -109,7 +109,7 @@ export default function Admin() {
   const handleCopyTistoryAiHtml = () => {
     if (!tistoryAiResult) return;
     navigator.clipboard.writeText(tistoryAiResult.htmlContent).then(() => {
-      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!\n티스토리 기본모드를 HTML로 변경하고 붙여넣기 하세요.");
+      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!\\n티스토리 기본모드를 HTML로 변경하고 붙여넣기 하세요.");
     }).catch(err => alert("복사 실패: " + err));
   };
 
@@ -148,7 +148,7 @@ export default function Admin() {
             key={cat.id}
             onClick={() => { setActiveCategory(cat.id); setTistoryKeyword(''); setTistoryAiResult(null); }}
             className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm
-              ${activeCategory === cat.id 
+              \${activeCategory === cat.id 
                 ? 'bg-white text-blue-700 shadow-sm border border-blue-100' 
                 : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200'}`}
           >
@@ -181,7 +181,7 @@ export default function Admin() {
                   className="flex items-center text-left bg-white px-4 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 border border-transparent transition-all group"
                 >
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3 
-                    ${index < 3 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    \${index < 3 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                     {index + 1}
                   </span>
                   <span className="font-bold text-slate-700 group-hover:text-indigo-700 transition-colors">{keyword}</span>
@@ -272,53 +272,13 @@ export default function Admin() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}enter gap-2 mb-2"><span className="bg-indigo-600 text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px]">1</span> 발생 원인 및 문제점</h3>
-                        <p className="bg-white border border-slate-100 shadow-sm p-4 rounded-xl text-[13px] text-slate-600 leading-relaxed"><strong className="text-red-600">🚨 문제 상황:</strong><br/>{postData.problem || '-'}<br/><br/><strong className="text-indigo-600">🔍 원인 분석:</strong><br/>{postData.cause || '-'}</p>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-base font-black text-slate-900 flex items-center gap-2 mb-2"><span className="bg-indigo-600 text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px]">2</span> 단계별 해결 방법</h3>
-                        <div className="space-y-2">
-                          {solutionSteps.length > 0 ? solutionSteps.map((s, i) => (
-                            <div key={i} className="bg-white border border-slate-100 shadow-sm p-3 rounded-xl text-[13px] text-slate-700 flex gap-2 items-start"><span className="bg-slate-100 text-indigo-600 w-5 h-5 rounded-full flex items-center justify-center shrink-0 font-bold text-[10px]">{i+1}</span><span className="mt-0.5">{s}</span></div>
-                          )) : <div className="bg-slate-50 p-3 rounded-xl text-xs text-slate-400 text-center">해결 방법을 입력하세요</div>}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="text-base font-black text-slate-900 flex items-center gap-2 mb-2"><span className="bg-indigo-600 text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px]">3</span> 에디터 꿀팁</h3>
-                        <p className="bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-[13px] text-slate-700 leading-relaxed flex gap-2"><span className="text-lg">💡</span> {postData.tips || '-'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sticky Mobile CTA Preview */}
-                  {postData.recommendationName && postData.recommendationUrl && (
-                     <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] animate-slide-up">
-                       <div className="flex justify-between items-center gap-3">
-                         <div className="flex-1 min-w-0">
-                           <div className="text-[10px] text-indigo-600 font-bold mb-0.5">🔥 지금 할인 중</div>
-                           <div className="text-sm font-bold text-slate-900 truncate">{postData.recommendationName}</div>
-                         </div>
-                         <div className="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-black shrink-0">🚀 최저가 확인</div>
-                       </div>
-                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Styles for animations */}
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        .animate-slide-up { animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
       `}} />
     </div>
   );
