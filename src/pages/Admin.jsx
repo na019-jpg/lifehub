@@ -1,24 +1,93 @@
-import React, { useState } from 'react';
-import { useContent } from '../contexts/ContentContext';
+import React, { useState, useMemo } from 'react';
 import SeoHelmet from '../components/SeoHelmet';
 import { generateTistoryPost } from '../utils/gemini';
 
+// --- Mock Data for Trends ---
+const TREND_DATA = {
+  finance: [
+    "청년도약계좌 조건", "디딤돌 대출 금리", "소상공인 대환대출", "특례보금자리론 신청",
+    "ISA 계좌 장단점", "연말정산 환급금", "기초노령연금 수급자격", "신생아 특례대출",
+    "부동산 취득세 계산", "햇살론 유스 조건", "버팀목 전세자금대출", "연금저축펀드 ETF",
+    "주택청약 1순위 조건", "근로장려금 지급일", "종합소득세 신고기간"
+  ],
+  insurance: [
+    "실손보험 청구서류", "자동차보험 비교견적", "치아보험 면책기간", "운전자보험 필요성",
+    "종신보험 해지환급금", "개인파산 신청자격", "개인회생 절차", "무해지 환급형 보험",
+    "간병인 보험 추천", "암보험 진단비", "이혼 재산분할 비율", "유류분 반환청구소송",
+    "산재보험 처리절차", "태아보험 가입시기", "상속세 면제한도"
+  ],
+  travel: [
+    "일본 여행 준비물", "오사카 유니버셜 스튜디오", "다낭 풀빌라 추천", "제주도 2박3일 코스",
+    "방콕 항공권 특가", "유럽 여행 소매치기", "대만 e-gate 등록", "괌 가족여행 리조트",
+    "비짓재팬웹 등록방법", "트래블로그 환전", "세부 호핑투어", "인천공항 스마트패스",
+    "여권 재발급 준비물", "도쿄 디즈니랜드", "나트랑 마사지 추천"
+  ],
+  car: [
+    "전기차 보조금 조회", "아이오닉6 실주행거리", "하이브리드 취등록세", "테슬라 모델Y 보조금",
+    "엔진오일 교환주기", "중고차 구매요령", "타이어 교체비용", "장기렌트카 장단점",
+    "자동차 검사 예약", "음주운전 처벌기준", "자동차세 연납할인", "쏘렌토 하이브리드 대기",
+    "블랙박스 추천", "하이패스 단말기 등록", "전기차 충전요금"
+  ],
+  health: [
+    "임플란트 가격비교", "백내장 수술비용", "대상포진 예방접종", "고지혈증 수치",
+    "당뇨 초기증상", "오메가3 효능", "루테인 지아잔틴", "공황장애 극복",
+    "수면다원검사 실비", "도수치료 가격", "틀니 건강보험", "다이어트 보조제 추천",
+    "탈모약 부작용", "보청기 지원금", "역류성 식도염 증상"
+  ]
+};
+
+const CATEGORIES = [
+  { id: 'finance', name: '금융/정부지원/부동산', icon: '💰' },
+  { id: 'insurance', name: '보험/법률', icon: '⚖️' },
+  { id: 'travel', name: '여행/관광/항공', icon: '✈️' },
+  { id: 'car', name: '자동차/전기차', icon: '🚗' },
+  { id: 'health', name: '의학지식/건강/노인', icon: '🏥' }
+];
+
 export default function Admin() {
-  const { data, addPost, updatePost, deletePost } = useContent();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   
-  // Tabs State: 'write', 'manage', or 'analytics'
-  const [activeTab, setActiveTab] = useState('write');
-  
-  // Looker Studio State
-  const [lookerUrl, setLookerUrl] = useState(localStorage.getItem('looker_studio_url') || '');
-  const [tempLookerUrl, setTempLookerUrl] = useState('');
-
-  // Tistory AI State
+  const [activeCategory, setActiveCategory] = useState('finance');
   const [tistoryKeyword, setTistoryKeyword] = useState('');
   const [tistoryAiLoading, setTistoryAiLoading] = useState(false);
   const [tistoryAiResult, setTistoryAiResult] = useState(null);
+
+  // 날짜 기반 렌덤 목데이터 추출 (매일 10시 갱신을 흉내내기 위해 오늘 날짜로 시드 생성)
+  const todaysTrends = useMemo(() => {
+    const today = new Date();
+    // 오전 10시 이전이면 어제 날짜를 기준으로 함
+    if (today.getHours() < 10) today.setDate(today.getDate() - 1);
+    
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    
+    // 카테고리별로 10개씩 추출
+    const getTrends = (catId) => {
+      const list = [...TREND_DATA[catId]];
+      // Fisher-Yates shuffle with pseudo-random seed
+      let m = list.length, t, i;
+      let currentSeed = seed;
+      while (m) {
+        currentSeed = (currentSeed * 9301 + 49297) % 233280;
+        i = Math.floor((currentSeed / 233280) * m--);
+        t = list[m];
+        list[m] = list[i];
+        list[i] = t;
+      }
+      return list.slice(0, 10);
+    };
+
+    return CATEGORIES.reduce((acc, cat) => {
+      acc[cat.id] = getTrends(cat.id);
+      return acc;
+    }, {});
+  }, []);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (password === '0000') setIsAuthenticated(true);
+    else alert('비밀번호가 일치하지 않습니다.');
+  };
 
   const handleGenerateTistoryAi = async () => {
     if (!tistoryKeyword.trim()) {
@@ -40,726 +109,172 @@ export default function Admin() {
   const handleCopyTistoryAiHtml = () => {
     if (!tistoryAiResult) return;
     navigator.clipboard.writeText(tistoryAiResult.htmlContent).then(() => {
-      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!");
+      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!\n티스토리 기본모드를 HTML로 변경하고 붙여넣기 하세요.");
     }).catch(err => alert("복사 실패: " + err));
   };
 
-  React.useEffect(() => {
-    console.log("✅ Admin Dashboard Loaded Successfully");
-  }, []);
-
-  const saveLookerUrl = () => {
-    localStorage.setItem('looker_studio_url', tempLookerUrl);
-    setLookerUrl(tempLookerUrl);
-  };
-
-  const resetLookerUrl = () => {
-    localStorage.removeItem('looker_studio_url');
-    setLookerUrl('');
-    setTempLookerUrl('');
-  };
-  
-  // Edit State
-  const [editingPostId, setEditingPostId] = useState(null);
-
-  // Form State
-  const [postData, setPostData] = useState({
-    title: '', categoryId: 'clean', subcategory: '', summary: '', thumbnailUrl: '',
-    problem: '', cause: '', solution: '', tips: '', conclusion: '',
-    recommendationName: '', recommendationUrl: '', recommendationPrice: '',
-    faqs: [
-      { q: '', a: '' },
-      { q: '', a: '' },
-      { q: '', a: '' }
-    ]
-  });
-
-  const handleFaqChange = (index, field, value) => {
-    const newFaqs = [...postData.faqs];
-    newFaqs[index][field] = value;
-    setPostData({ ...postData, faqs: newFaqs });
-  };
-
-  // Automatically update subcategory when category changes
-  const handleCategoryChange = (e) => {
-    const newCatId = e.target.value;
-    const relatedCat = data.categories.find(c => c.id === newCatId);
-    setPostData({
-      ...postData,
-      categoryId: newCatId,
-      subcategory: relatedCat && relatedCat.subcategories && relatedCat.subcategories.length > 0 ? relatedCat.subcategories[0] : ''
-    });
-  };
-
-  // Drafts State
-  const [drafts, setDrafts] = useState([]);
-  const [currentDraftId, setCurrentDraftId] = useState(null);
-  
-  const fetchDrafts = () => {
-    fetch('/drafts.json')
-      .then(res => res.json())
-      .then(fetchedData => {
-        if (Array.isArray(fetchedData)) {
-          const published = JSON.parse(localStorage.getItem('published_drafts') || '[]');
-          setDrafts(fetchedData.filter(d => !published.includes(d.id)));
-        } else {
-          setDrafts([]);
-        }
-      })
-      .catch(err => console.error("크롤링된 초안 없음", err));
-  };
-
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      fetchDrafts();
-    }
-  }, [isAuthenticated]);
-
-  const loadDraft = (draft) => {
-    setEditingPostId(null);
-    setCurrentDraftId(draft.id);
-    setPostData({
-      title: draft.title || '',
-      categoryId: draft.categoryId || 'clean',
-      subcategory: draft.subcategory || '',
-      summary: draft.summary || '',
-      thumbnailUrl: draft.thumbnailUrl || '',
-      problem: draft.content?.problem || '',
-      cause: draft.content?.cause || '',
-      solution: Array.isArray(draft.content?.solution) ? draft.content.solution.join('\n') : (draft.content?.solution || ''),
-      tips: draft.content?.tips || '',
-      conclusion: draft.content?.conclusion || '',
-      recommendationName: draft.content?.recommendation?.name || '',
-      recommendationUrl: draft.content?.recommendation?.url || '',
-      recommendationPrice: draft.content?.recommendation?.price || '',
-      faqs: Array.isArray(draft.content?.faqs) ? draft.content.faqs : [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
-    });
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  };
-
-  const removeDraft = (draftId) => {
-    if(window.confirm("이 항목을 임시보관함에서 삭제하시겠습니까?")) {
-      const published = JSON.parse(localStorage.getItem('published_drafts') || '[]');
-      published.push(draftId);
-      localStorage.setItem('published_drafts', JSON.stringify(published));
-      setDrafts(prev => prev.filter(d => d.id !== draftId));
-      if (currentDraftId === draftId) setCurrentDraftId(null);
-    }
-  };
-
-  const loadPublishedPostForEdit = (post) => {
-    setActiveTab('write');
-    setEditingPostId(post.id);
-    setCurrentDraftId(null);
-    
-    setPostData({
-      title: post.title || '',
-      categoryId: post.categoryId || 'clean',
-      subcategory: post.subcategory || '',
-      summary: post.summary || '',
-      thumbnailUrl: post.thumbnailUrl || '',
-      problem: post.content?.problem || '',
-      cause: post.content?.cause || '',
-      solution: Array.isArray(post.content?.solution) ? post.content.solution.join('\n') : (post.content?.solution || ''),
-      tips: post.content?.tips || '',
-      conclusion: post.content?.conclusion || '',
-      recommendationName: post.content?.recommendation?.name || '',
-      recommendationUrl: post.content?.recommendation?.url || '',
-      recommendationPrice: post.content?.recommendation?.price || '',
-      faqs: Array.isArray(post.content?.faqs) ? post.content.faqs : [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleDeletePublishedPost = (postId) => {
-    if(window.confirm("⚠️ 정말로 이 발행된 게시물을 영구 삭제하시겠습니까? 복구할 수 없습니다.")) {
-      deletePost(postId);
-      alert('삭제되었습니다.');
-    }
-  };
-
-  const clearForm = () => {
-    setCurrentDraftId(null);
-    setEditingPostId(null);
-    setPostData({
-      recommendationName: '', recommendationUrl: '', recommendationPrice: '',
-      faqs: [{q:'',a:''},{q:'',a:''},{q:'',a:''}]
-    });
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === '0000') setIsAuthenticated(true);
-    else alert('비밀번호가 일치하지 않습니다.');
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    const preparedContent = {
-      problem: postData.problem,
-      cause: postData.cause,
-      solution: postData.solution.split('\n').filter(Boolean),
-      tips: postData.tips,
-      conclusion: postData.conclusion,
-      recommendation: {
-        name: postData.recommendationName,
-        url: postData.recommendationUrl,
-        price: postData.recommendationPrice
-      },
-      faqs: postData.faqs.filter(f => f.q && f.a)
-    };
-
-    if (editingPostId) {
-      updatePost(editingPostId, {
-        title: postData.title,
-        categoryId: postData.categoryId,
-        subcategory: postData.subcategory,
-        summary: postData.summary,
-        thumbnailUrl: postData.thumbnailUrl,
-        content: preparedContent
-      });
-      alert('포스팅이 성공적으로 수정되었습니다!');
-    } else {
-      const newPost = {
-        id: `post-${Date.now()}`,
-        slug: postData.title.toLowerCase().replace(/[^a-z0-9가-힣]/g, '-'),
-        title: postData.title,
-        categoryId: postData.categoryId,
-        subcategory: postData.subcategory,
-        summary: postData.summary,
-        date: new Date().toISOString().split('T')[0],
-        thumbnailUrl: postData.thumbnailUrl,
-        content: preparedContent,
-        monetization: {
-          adsense: true,
-          affiliate_links: [],
-          affiliate_note: "이 포스팅은 제휴 마케팅이 포함되어 있으며, 이에 따른 일정액의 수수료를 제공받습니다."
-        }
-      };
-      addPost(newPost);
-      alert('구조화된 블로그 포스트가 새로 등록되었습니다!');
-
-      if (currentDraftId) {
-        const published = JSON.parse(localStorage.getItem('published_drafts') || '[]');
-        published.push(currentDraftId);
-        localStorage.setItem('published_drafts', JSON.stringify(published));
-        setDrafts(prev => prev.filter(d => d.id !== currentDraftId));
-      }
-    }
-
-    clearForm();
-  };
-
-  const [isDeploying, setIsDeploying] = useState(false);
-
-  const handleDeploy = async () => {
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      alert('⚠️ 인터넷에 접속된 화면에서는 배포할 수 없습니다!\n반드시 컴퓨터의 로컬 환경(localhost:5173)에서 실행하세요.');
-      return;
-    }
-    
-    if (!window.confirm("현재까지 작성 및 수정한 모든 내용을 실제 웹사이트에 배포하시겠습니까?\n(배포 후 약 1분 뒤에 인터넷에 반영됩니다)")) return;
-    
-    setIsDeploying(true);
-    try {
-      const res = await fetch('/api/deploy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      
-      if (result.success) {
-        alert('🎉 성공적으로 전송되었습니다!\n\n약 1~2분 뒤에 실제 스마트폰이나 인터넷 주소창에서 사이트 새로고침(F5)을 해보세요.');
-      } else {
-        alert('❌ 배포 오류 발생:\n' + (result.error || '알 수 없는 에러입니다.'));
-      }
-    } catch (e) {
-      alert('❌ 서버 통신 오류입니다. 프로그램을 완전히 껐다가 다시 실행해 주세요.');
-    } finally {
-      setIsDeploying(false);
-    }
-  };
-
-  // Pre-calculations for Preview
-  const categoryName = data.categories.find(c => c.id === postData.categoryId)?.name || '정보';
-  const solutionSteps = postData.solution ? postData.solution.split('\n').filter(Boolean) : [];
-
-  const handleCopyTistoryHtml = () => {
-    if (!postData.title) {
-      alert("제목을 먼저 입력해주세요!");
-      return;
-    }
-    
-    let html = `
-      <div style="font-family: 'Noto Sans KR', sans-serif; color: #333; line-height: 1.8; max-width: 800px; margin: 0 auto;">
-        <h1 style="font-size: 24px; color: #111; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px;">
-          ${postData.title}
-        </h1>
-    `;
-    
-    if (postData.thumbnailUrl) {
-      html += `<img src="${postData.thumbnailUrl}" style="width: 100%; border-radius: 12px; margin-bottom: 20px;" alt="썸네일" />`;
-    }
-    
-    html += `
-        <blockquote style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px 20px; margin: 0 0 30px 0; border-radius: 0 8px 8px 0; color: #475569;">
-          <strong>💡 핵심 요약</strong><br/>
-          ${postData.summary || ''}
-        </blockquote>
-
-        <h2 style="font-size: 20px; color: #1e293b; margin-top: 30px; margin-bottom: 15px;">
-          <span style="background-color: #4f46e5; color: white; border-radius: 4px; padding: 2px 8px; font-size: 14px; margin-right: 8px;">1</span> 🚨 문제 및 원인
-        </h2>
-        <div style="background-color: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
-          <p style="margin-top: 0;"><strong>문제 상황:</strong><br/>${postData.problem.replace(/\n/g, '<br/>')}</p>
-          <p style="margin-bottom: 0; margin-top: 15px;"><strong>원인 분석:</strong><br/>${postData.cause.replace(/\n/g, '<br/>')}</p>
-        </div>
-
-        <h2 style="font-size: 20px; color: #1e293b; margin-top: 30px; margin-bottom: 15px;">
-          <span style="background-color: #4f46e5; color: white; border-radius: 4px; padding: 2px 8px; font-size: 14px; margin-right: 8px;">2</span> 🚀 해결 비법
-        </h2>
-        <div style="margin-bottom: 30px;">
-          ${solutionSteps.map((s, i) => `
-            <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-              <strong style="color: #4f46e5;">Step ${i+1}.</strong> ${s.replace(/\n/g, '<br/>')}
-            </div>
-          `).join('')}
-        </div>
-
-        <h2 style="font-size: 20px; color: #1e293b; margin-top: 30px; margin-bottom: 15px;">
-          <span style="background-color: #4f46e5; color: white; border-radius: 4px; padding: 2px 8px; font-size: 14px; margin-right: 8px;">3</span> 💡 에디터 특급 꿀팁
-        </h2>
-        <div style="background-color: #fefce8; border: 1px solid #fef08a; padding: 20px; border-radius: 12px; margin-bottom: 30px; color: #854d0e;">
-          ${postData.tips.replace(/\n/g, '<br/>')}
-        </div>
-        
-        <p style="font-size: 16px; font-weight: bold; text-align: center; color: #0f172a; padding: 20px; border-top: 1px dashed #cbd5e1; border-bottom: 1px dashed #cbd5e1; margin-bottom: 40px;">
-          ✨ ${postData.conclusion}
-        </p>
-    `;
-
-    if (postData.recommendationName && postData.recommendationUrl) {
-      html += `
-        <div style="text-align: center; margin: 40px 0; background-color: #f8fafc; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 12px; color: #ef4444; font-weight: bold; margin-bottom: 5px;">🔥 지금 할인 중인 추천 아이템!</div>
-          <div style="font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1e293b;">${postData.recommendationName} <span style="color: #3b82f6;">(${postData.recommendationPrice})</span></div>
-          <a href="${postData.recommendationUrl}" target="_blank" style="display: inline-block; background-color: #ef4444; color: white; text-decoration: none; padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 50px; box-shadow: 0 4px 6px rgba(239,68,68,0.3);">
-            🚀 최저가 확인하러 가기
-          </a>
-          <p style="font-size: 11px; color: #94a3b8; margin-top: 20px;">이 포스팅은 제휴 마케팅이 포함되어 있으며, 이에 따른 일정액의 수수료를 제공받습니다.</p>
-        </div>
-      `;
-    }
-
-    html += `</div>`;
-
-    navigator.clipboard.writeText(html).then(() => {
-      alert("✅ 티스토리용 HTML이 복사되었습니다!\\n\\n티스토리 글쓰기 에디터에서 우측 상단의 '기본모드'를 'HTML'로 변경한 뒤 붙여넣기(Ctrl+V) 하세요.");
-    }).catch(err => {
-      alert("복사 실패: " + err);
-    });
+  const handleTrendClick = (keyword) => {
+    setTistoryKeyword(keyword);
+    setTistoryAiResult(null);
   };
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
         <form onSubmit={handleLogin} className="bg-white p-8 rounded-3xl shadow-lg border border-slate-200">
-           <h2 className="text-2xl font-black text-slate-800 mb-6 text-center">블로그 Admin</h2>
+           <h2 className="text-2xl font-black text-slate-800 mb-6 text-center">글 제조기 Admin</h2>
            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border mb-4 text-center" placeholder="****" />
-           <button type="submit" className="w-full bg-slate-800 text-white font-bold py-3 rounded-xl">로그인</button>
+           <button type="submit" className="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition">로그인</button>
         </form>
       </div>
     );
   }
 
   return (
-    <div className={`container mx-auto px-4 py-8 min-h-screen transition-all duration-300 ${activeTab === 'write' ? 'max-w-7xl' : 'max-w-4xl'}`}>
-      <SeoHelmet title="관리자 대시보드" />
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-black text-slate-800">⚙️ 블로그 CMS 관리자</h1>
-        <button 
-          onClick={handleDeploy} 
-          disabled={isDeploying}
-          className={`${isDeploying ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'} text-white font-black px-5 py-3 rounded-2xl shadow-lg transition-all`}
-        >
-          {isDeploying ? '⏳ 배포 중...' : '🚀 웹사이트 전체 배포하기'}
-        </button>
+    <div className="container mx-auto px-4 py-8 min-h-screen max-w-6xl">
+      <SeoHelmet title="티스토리 자동 포스팅 - 관리자" />
+      
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-3 tracking-tight flex items-center justify-center gap-3">
+          <span className="text-4xl">🤖</span> 티스토리 자동 글 제조기
+        </h1>
+        <p className="text-slate-500 font-medium">단가가 높은 타겟 키워드를 바탕으로 고수익 창출을 위한 HTML 포스팅을 자동 생성합니다.</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-2 mb-8 bg-slate-200 p-1 rounded-2xl overflow-x-auto">
-        <button onClick={() => setActiveTab('write')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'write' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
-          📝 작성 및 실시간 미리보기
-        </button>
-        <button onClick={() => setActiveTab('manage')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'manage' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
-          📚 발행 관리
-        </button>
-        <button onClick={() => setActiveTab('tistory')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'tistory' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
-          📝 티스토리 AI
-        </button>
-        <button onClick={() => setActiveTab('analytics')} className={`flex-none px-6 py-3 rounded-xl font-bold transition-colors ${activeTab === 'analytics' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>
-          📊 방문자 통계 UI
-        </button>
+      {/* Categories Tab */}
+      <div className="flex flex-wrap gap-2 mb-8 bg-slate-100 p-2 rounded-2xl">
+        {CATEGORIES.map(cat => (
+          <button 
+            key={cat.id}
+            onClick={() => { setActiveCategory(cat.id); setTistoryKeyword(''); setTistoryAiResult(null); }}
+            className={`flex-1 min-w-[140px] px-4 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm
+              ${activeCategory === cat.id 
+                ? 'bg-white text-blue-700 shadow-sm border border-blue-100' 
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200'}`}
+          >
+            <span className="text-lg">{cat.icon}</span>
+            {cat.name}
+          </button>
+        ))}
       </div>
 
-      {activeTab === 'tistory' && (
-        <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm min-h-[600px] animate-fade-in">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-black text-slate-800 mb-2 flex items-center gap-2">
-              <span className="text-3xl">✨</span> 티스토리 전용 3050 고단가 포스팅 생성기
-            </h2>
-            <p className="text-slate-500 font-medium mb-8">
-              입력한 키워드를 바탕으로 구글 애드센스 고수익(High CPC) 타겟의 HTML 문서(1,500자 이상)를 자동 생성합니다.<br/>
-              본 웹사이트의 데이터와는 전혀 무관하게 독립적으로 작동합니다.
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Left Column: Trends & Input */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-3xl border border-indigo-100">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-black text-indigo-900 flex items-center gap-2">
+                <span>🔥</span> 오늘의 트렌드 TOP 10
+              </h2>
+              <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">매일 10시 갱신</span>
+            </div>
+            <p className="text-xs text-indigo-600 mb-4 font-medium leading-relaxed">
+              현재 선택된 <strong className="font-bold">[{CATEGORIES.find(c => c.id === activeCategory)?.name}]</strong> 카테고리의 고단가 추천 키워드입니다. 클릭하면 자동으로 입력창에 들어갑니다.
             </p>
+            
+            <div className="flex flex-col gap-2">
+              {todaysTrends[activeCategory].map((keyword, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleTrendClick(keyword)}
+                  className="flex items-center text-left bg-white px-4 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 border border-transparent transition-all group"
+                >
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3 
+                    ${index < 3 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    {index + 1}
+                  </span>
+                  <span className="font-bold text-slate-700 group-hover:text-indigo-700 transition-colors">{keyword}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
-            <div className="flex gap-3 mb-8">
+        {/* Right Column: AI Generator & Results */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 opacity-50"></div>
+            
+            <h2 className="text-2xl font-black text-slate-800 mb-6">📝 AI 포스팅 생성</h2>
+            
+            <div className="flex flex-col sm:flex-row gap-3 mb-2">
               <input 
                 type="text" 
                 value={tistoryKeyword}
                 onChange={(e) => setTistoryKeyword(e.target.value)}
-                placeholder="키워드 또는 주제를 입력하세요 (예: 임플란트, 주택담보대출, 실업급여 등)"
-                className="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition font-bold"
+                placeholder="키워드를 입력하거나 좌측 트렌드를 클릭하세요."
+                className="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-lg"
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
               />
               <button 
                 onClick={handleGenerateTistoryAi}
                 disabled={tistoryAiLoading}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-4 rounded-2xl shadow-lg transition disabled:bg-slate-300 shrink-0"
+                className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 py-4 rounded-2xl shadow-lg transition disabled:bg-slate-300 shrink-0 text-lg flex items-center justify-center gap-2"
               >
-                {tistoryAiLoading ? '생성 중...' : '포스팅 생성'}
+                {tistoryAiLoading ? '작성 중...' : '✨ 글쓰기'}
               </button>
             </div>
+            <p className="text-sm text-slate-500 mb-8 ml-2">포스팅 생성에는 약 30초~1분 정도 소요될 수 있습니다.</p>
 
             {tistoryAiLoading && (
-              <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">AI가 3050 타겟 고단가 포스팅을 작성 중입니다...</h3>
-                <p className="text-slate-500 font-medium text-sm">약 1~2분 정도 소요될 수 있습니다. 창을 닫지 마세요.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-2xl border border-slate-100 animate-pulse">
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">AI가 고단가 최적화 포스팅을 작성하고 있습니다...</h3>
+                <p className="text-slate-500 font-medium text-sm">AEO 봇이 좋아하는 문맥과 구조로 구성하는 중입니다.</p>
               </div>
             )}
 
             {!tistoryAiLoading && tistoryAiResult && (
-              <div className="space-y-6 animate-fade-in">
+              <div className="space-y-6 animate-fade-in mt-8 pt-8 border-t border-slate-100">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                    <h4 className="font-black text-blue-800 mb-3 flex items-center gap-1.5"><span>📈</span> 키워드 분석</h4>
-                    <p className="text-sm text-blue-900 leading-relaxed font-medium">{tistoryAiResult.keywordAnalysis}</p>
+                  <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
+                    <h4 className="font-black text-blue-800 mb-2 flex items-center gap-1.5 text-sm"><span>📈</span> 키워드 분석</h4>
+                    <p className="text-xs text-blue-900 leading-relaxed font-medium">{tistoryAiResult.keywordAnalysis}</p>
                   </div>
-                  <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
-                    <h4 className="font-black text-emerald-800 mb-3 flex items-center gap-1.5"><span>🤖</span> AEO 최적화 전략</h4>
-                    <p className="text-sm text-emerald-900 leading-relaxed font-medium">{tistoryAiResult.aeoStrategy}</p>
+                  <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
+                    <h4 className="font-black text-emerald-800 mb-2 flex items-center gap-1.5 text-sm"><span>🤖</span> AEO 최적화</h4>
+                    <p className="text-xs text-emerald-900 leading-relaxed font-medium">{tistoryAiResult.aeoStrategy}</p>
                   </div>
-                  <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
-                    <h4 className="font-black text-amber-800 mb-3 flex items-center gap-1.5"><span>💰</span> 광고 배치 가이드</h4>
-                    <p className="text-sm text-amber-900 leading-relaxed font-medium">{tistoryAiResult.adPlacementGuide}</p>
+                  <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100">
+                    <h4 className="font-black text-amber-800 mb-2 flex items-center gap-1.5 text-sm"><span>💰</span> 광고 배치</h4>
+                    <p className="text-xs text-amber-900 leading-relaxed font-medium">{tistoryAiResult.adPlacementGuide}</p>
                   </div>
                 </div>
                 
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                  <h4 className="font-black text-slate-800 mb-3 text-sm">📌 생성된 제목</h4>
-                  <div className="bg-white p-4 rounded-xl font-bold text-slate-800 border border-slate-100 shadow-sm">{tistoryAiResult.title}</div>
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                  <h4 className="font-black text-slate-800 mb-2 text-sm">📌 포스팅 제목 추천</h4>
+                  <div className="bg-white p-3 rounded-xl font-bold text-slate-800 border border-slate-100 shadow-sm">
+                    {tistoryAiResult.title}
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-black text-slate-800">💻 생성된 HTML 본문 (티스토리용)</h4>
-                    <button onClick={handleCopyTistoryAiHtml} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition">
-                      📋 전체 HTML 복사
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+                    <div>
+                      <h4 className="font-black text-slate-800 flex items-center gap-2">
+                        💻 티스토리 HTML 본문
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1">티스토리 글쓰기 에디터 우측 상단의 '기본모드'를 'HTML'로 변경 후 붙여넣으세요.</p>
+                    </div>
+                    <button onClick={handleCopyTistoryAiHtml} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black shadow-md transition whitespace-nowrap">
+                      📋 1초 복사하기
                     </button>
                   </div>
                   <textarea 
                     readOnly 
                     value={tistoryAiResult.htmlContent} 
-                    className="w-full h-96 p-5 bg-slate-900 text-emerald-400 font-mono text-sm rounded-xl outline-none shadow-inner"
+                    className="w-full h-96 p-5 bg-slate-900 text-emerald-400 font-mono text-sm rounded-xl outline-none shadow-inner resize-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
             )}
           </div>
-        </section>
-      )}
-
-      {activeTab === 'analytics' && (
-        <section className="space-y-6 animate-fade-in">
-          {!lookerUrl ? (
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm max-w-2xl mx-auto">
-              <h2 className="text-2xl font-black text-slate-800 mb-4 flex items-center gap-2">📊 구글 루커 스튜디오 연결</h2>
-              <p className="text-slate-600 mb-6 leading-relaxed">
-                구글 애널리틱스 데이터를 예쁜 차트로 보여주는 <b>Looker Studio 임베드(Embed) 링크</b>를 입력해 주세요.<br/>
-                복잡한 서버 설정 없이 가장 안전하고 확실하게 데이터를 연동할 수 있습니다.
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">루커 스튜디오 임베드 URL (src 값)</label>
-                  <input 
-                    type="url" 
-                    value={tempLookerUrl} 
-                    onChange={e => setTempLookerUrl(e.target.value)} 
-                    placeholder="https://lookerstudio.google.com/embed/reporting/..." 
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
-                  />
-                </div>
-                <button 
-                  onClick={saveLookerUrl}
-                  disabled={!tempLookerUrl}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl transition"
-                >
-                  🔗 대시보드 연결하기
-                </button>
-              </div>
-
-              <div className="mt-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 text-sm">
-                <h3 className="font-black text-slate-800 mb-3 text-base">💡 임베드 링크 가져오는 방법 (초간단 1분 컷)</h3>
-                <ol className="list-decimal list-inside space-y-2 text-slate-700 font-medium">
-                  <li><a href="https://lookerstudio.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 font-bold hover:underline">Looker Studio</a>에 접속하여 빈 보고서를 만듭니다.</li>
-                  <li>데이터 소스로 <b>Google Analytics</b>를 선택하고 방금 만든 사이트 속성을 연결합니다.</li>
-                  <li>차트 추가 버튼을 눌러 원하는 통계(방문자 수 등)를 자유롭게 그립니다.</li>
-                  <li>우측 상단의 <b>[공유] ▼ ➔ [보고서 삽입(Embed report)]</b>을 클릭합니다.</li>
-                  <li><b>'삽입 URL(Embed URL)'</b>을 선택하고 나오는 주소를 복사해서 위 칸에 붙여넣습니다.</li>
-                </ol>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col h-[800px]">
-              <div className="flex justify-between items-center mb-4 shrink-0">
-                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">📊 실시간 애널리틱스 대시보드</h2>
-                <button onClick={resetLookerUrl} className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold px-4 py-2 rounded-lg transition">
-                  링크 변경
-                </button>
-              </div>
-              <div className="flex-1 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
-                <iframe 
-                  src={lookerUrl} 
-                  width="100%" 
-                  height="100%" 
-                  frameBorder="0" 
-                  style={{ border: 0 }} 
-                  allowFullScreen 
-                  sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-                ></iframe>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
-      {activeTab === 'manage' && (
-        <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-          <h2 className="text-xl font-bold mb-4">현재 발행된 게시물 목록 ({data.posts.length}건)</h2>
-          <div className="space-y-4">
-            {data.posts.map(post => (
-              <div key={post.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl gap-4 hover:border-slate-300">
-                <div>
-                  <div className="text-xs text-slate-500 font-bold mb-1">{post.categoryId.toUpperCase()} • {post.date}</div>
-                  <h3 className="font-bold text-slate-800">{post.title}</h3>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={() => loadPublishedPostForEdit(post)} className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-slate-200">✏️ 수정</button>
-                  <button onClick={() => handleDeletePublishedPost(post.id)} className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100">🗑️ 삭제</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {activeTab === 'write' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
-          {/* Left Column: Form Editor */}
-          <div className="space-y-6">
-            {!editingPostId && (
-              <section className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-black text-indigo-900">📥 AI 자동 작성 대기함 ({drafts.length})</h2>
-                  <button onClick={fetchDrafts} className="bg-indigo-200 text-indigo-800 font-bold px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 hover:bg-indigo-300 transition">
-                    🔄 새로고침
-                  </button>
-                </div>
-                {drafts.length === 0 ? (
-                  <div className="text-center py-6 text-indigo-400 font-bold">대기 중인 초안이 없습니다. 터미널에서 npm run crawl을 실행하세요.</div>
-                ) : (
-                  <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                    {drafts.map((draft, idx) => (
-                      <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-indigo-50 flex items-center justify-between gap-4 hover:shadow-md transition">
-                        <div className="truncate flex-1">
-                          <h3 className="font-bold text-slate-800 truncate">{draft.title}</h3>
-                          <p className="text-xs text-slate-500 mt-1 truncate">{draft.summary}</p>
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                          <button onClick={() => loadDraft(draft)} className="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">불러오기</button>
-                          <button onClick={() => removeDraft(draft.id)} className="bg-slate-100 text-slate-500 font-bold px-3 py-2 rounded-lg text-sm hover:bg-slate-200 transition">🗑️</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-            )}
-
-            {editingPostId && (
-              <div className="bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-xl flex justify-between items-center font-bold">
-                <span>⚠️ 현재 발행된 포스트 수정 모드입니다.</span>
-                <button onClick={clearForm} className="bg-orange-200 px-3 py-1.5 rounded-lg text-sm hover:bg-orange-300">작성 취소</button>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm focus-within:border-blue-300 focus-within:shadow-md transition-all">
-                <h2 className="text-xl font-bold mb-4">기본 정보</h2>
-                <div className="space-y-4">
-                  <input type="text" required value={postData.title} onChange={e => setPostData({...postData, title: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition" placeholder="게시글 제목" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <select value={postData.categoryId} onChange={handleCategoryChange} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition font-bold">
-                      {data.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <select 
-                      value={postData.subcategory} 
-                      onChange={e => setPostData({...postData, subcategory: e.target.value})} 
-                      className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition font-bold"
-                      disabled={!data.categories.find(c => c.id === postData.categoryId)?.subcategories?.length}
-                    >
-                      <option value="">서브 카테고리 (옵션)</option>
-                      {data.categories.find(c => c.id === postData.categoryId)?.subcategories?.map(sub => (
-                        <option key={sub} value={sub}>{sub}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <input type="url" value={postData.thumbnailUrl} onChange={e => setPostData({...postData, thumbnailUrl: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="썸네일 이미지 URL (또는 비워두기)" />
-                  <textarea required value={postData.summary} onChange={e => setPostData({...postData, summary: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition h-24" placeholder="짧은 핵심 요약 (이 내용이 구글 검색 결과의 디스크립션으로 자동 등록됩니다)"></textarea>
-                </div>
-              </section>
-
-              <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm focus-within:border-blue-300 focus-within:shadow-md transition-all">
-                 <h2 className="text-xl font-bold mb-4">본문 구조화 작성</h2>
-                 <div className="space-y-4">
-                   <textarea required value={postData.problem} onChange={e => setPostData({...postData, problem: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="1. 🚨 문제 상황 설명"></textarea>
-                   <textarea required value={postData.cause} onChange={e => setPostData({...postData, cause: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="2. 🔍 원인 분석"></textarea>
-                   <textarea required value={postData.solution} onChange={e => setPostData({...postData, solution: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition h-32" placeholder="3. 🚀 단계별 해결 방법 (엔터로 구분해서 입력 시 자동으로 넘버링 리스트업 됩니다)"></textarea>
-                   <textarea required value={postData.tips} onChange={e => setPostData({...postData, tips: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="4. 💡 에디터 추가 꿀팁"></textarea>
-                   <textarea required value={postData.conclusion} onChange={e => setPostData({...postData, conclusion: e.target.value})} className="w-full px-4 py-3 border rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition" placeholder="5. ✨ 요약 및 기대 효과 (한 줄 정리)"></textarea>
-                 </div>
-              </section>
-
-              <section className="bg-blue-50 p-6 rounded-3xl border border-blue-200 shadow-sm focus-within:border-blue-400 focus-within:shadow-md transition-all">
-                 <h2 className="text-xl font-bold text-blue-900 mb-4">💎 추천 상품 제휴 링크 (쿠팡 버튼)</h2>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                   <input type="text" value={postData.recommendationName} onChange={e => setPostData({...postData, recommendationName: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="상품명 (예: 산소계 표백제)" />
-                   <input type="text" value={postData.recommendationPrice} onChange={e => setPostData({...postData, recommendationPrice: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="할인 가격 (예: 12,000원)" />
-                   <input type="url" value={postData.recommendationUrl} onChange={e => setPostData({...postData, recommendationUrl: e.target.value})} className="w-full px-4 py-3 border border-blue-100 rounded-xl bg-white focus:border-blue-500 outline-none" placeholder="제휴 URL (https://...)" />
-                 </div>
-              </section>
-
-              <section className="bg-emerald-50 p-6 rounded-3xl border border-emerald-200 shadow-sm focus-within:border-emerald-400 transition-all">
-                 <h2 className="text-xl font-bold text-emerald-900 mb-4">🙋‍♂️ FAQ (AEO 최적화 답변 섹션)</h2>
-                 <p className="text-xs text-emerald-700 mb-4 font-bold">구글 검색 시 '질문-답변' 리치 결과로 노출될 확률을 높입니다.</p>
-                 <div className="space-y-4">
-                   {postData.faqs.map((faq, idx) => (
-                     <div key={idx} className="p-4 bg-white rounded-2xl border border-emerald-100 space-y-2">
-                       <div className="flex gap-2 items-center">
-                         <span className="bg-emerald-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold">Q</span>
-                         <input 
-                            type="text" 
-                            value={faq.q} 
-                            onChange={e => handleFaqChange(idx, 'q', e.target.value)} 
-                            className="flex-1 px-3 py-2 border rounded-lg outline-none focus:border-emerald-500" 
-                            placeholder="사용자가 검색할만한 질문 (예: 곰팡이 방지법은?)"
-                         />
-                       </div>
-                       <div className="flex gap-2 items-start">
-                         <span className="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mt-2">A</span>
-                         <textarea 
-                            value={faq.a} 
-                            onChange={e => handleFaqChange(idx, 'a', e.target.value)} 
-                            className="flex-1 px-3 py-2 border rounded-lg outline-none focus:border-emerald-500 h-20" 
-                            placeholder="명확하고 친절한 답변 (구글 검색 결과에 직접 노출됩니다)"
-                         />
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-              </section>
-
-              <button type="submit" className={`w-full text-white font-black text-lg py-5 rounded-2xl shadow-xl transition transform hover:-translate-y-1 ${editingPostId ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-200' : 'bg-slate-800 hover:bg-slate-900 shadow-slate-300'}`}>
-                {editingPostId ? '🔄 수정한 내용으로 재발행하기' : '🚀 구조화 포스팅 확정 및 퍼블리싱'}
-              </button>
-            </form>
-          </div>
-
-          {/* Right Column: Live Preview Pane */}
-          <div className="hidden lg:block relative">
-            <div className="sticky top-6 flex flex-col h-[calc(100vh-3rem)]">
-              
-              {/* Tistory Copy Button */}
-              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-3xl shadow-lg mb-4 flex items-center justify-between shrink-0">
-                <div>
-                  <h3 className="text-white font-black text-lg flex items-center gap-2"><span>📝</span> 티스토리 자동 복사기</h3>
-                  <p className="text-orange-100 text-[11px] mt-0.5 font-medium">티스토리 HTML 모드에서 붙여넣기만 하세요!</p>
-                </div>
-                <button type="button" onClick={handleCopyTistoryHtml} className="bg-white text-orange-600 font-black px-4 py-2.5 rounded-xl shadow-sm hover:scale-105 hover:shadow-md transition transform text-sm">
-                  📋 HTML 1초 복사
-                </button>
-              </div>
-
-              {/* 1. SEO Meta Preview */}
-              <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 mb-6 shrink-0">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-black text-slate-700 flex items-center gap-2"><span>🔍</span> 구글 검색 노출 미리보기</h3>
-                  <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded">자동 SEO 설정 켜짐</span>
-                </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 cursor-default">
-                  <div className="text-[12px] text-slate-500 truncate mb-1">https://lifestyle-hub.co.kr {'>'} post {'>'} {postData.title ? postData.title.toLowerCase().replace(/\s+/g, '-') : '...'}</div>
-                  <div className="text-[20px] font-bold text-[#1a0dab] hover:underline cursor-pointer truncate">
-                    {postData.title || '게시글 제목이 여기에 표시됩니다'}
-                  </div>
-                  <div className="text-[13px] text-[#4d5156] mt-1 line-clamp-2 leading-relaxed">
-                    {postData.summary || '게시글의 핵심 요약 내용이 자동으로 메타태그(meta description)에 삽입되어, 구글 검색 결과 텍스트로 노출됩니다. 방문자의 클릭을 유도할 수 있도록 매력적으로 작성하세요.'}
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Mobile Device Mockup for Post Detail */}
-              <div className="flex-1 bg-slate-900 rounded-[2.5rem] overflow-hidden border-[8px] border-slate-900 shadow-2xl relative max-w-[380px] mx-auto w-full flex flex-col animate-fade-in">
-                {/* iPhone Notch */}
-                <div className="absolute top-0 inset-x-0 h-6 bg-slate-900 rounded-b-2xl w-36 mx-auto z-50"></div>
-                
-                {/* Screen Content */}
-                <div className="flex-1 bg-white overflow-y-auto hide-scrollbar relative">
-                  
-                  {/* Fake Browser Header */}
-                  <div className="bg-slate-50 pt-8 pb-3 px-4 border-b border-slate-200 flex justify-center sticky top-0 z-40">
-                    <div className="bg-slate-200 rounded-full h-6 w-3/4 flex items-center justify-center text-[10px] text-slate-500 font-bold">lifestyle-hub.co.kr</div>
-                  </div>
-
-                  <div className="p-5 pb-24">
-                    <div className="text-xs text-indigo-600 font-bold mb-2 uppercase">{categoryName}</div>
-                    <h1 className="text-2xl font-black text-slate-900 leading-tight mb-4">
-                      {postData.title || '제목을 입력하세요'}
-                    </h1>
-                    
-                    {postData.thumbnailUrl ? (
-                       <img src={postData.thumbnailUrl} className="w-full aspect-[16/9] object-cover rounded-xl mb-6 shadow-sm" alt="thumb"/>
-                    ) : (
-                       <div className="w-full aspect-[16/9] bg-slate-100 rounded-xl mb-6 flex items-center justify-center text-slate-300 font-bold">이미지 없음</div>
-                    )}
-
-                    {/* AI Summary Box */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-xl mb-8 shadow-sm">
-                      <h2 className="text-sm font-black text-indigo-900 mb-3 flex items-center gap-1">💡 AI 핵심 요약 (AEO 봇 수집)</h2>
-                      <ul className="space-y-2 bg-white/70 p-3 rounded-lg text-[13px]">
-                        <li className="flex gap-2"><span className="text-red-500 font-bold shrink-0">🎯 문제:</span> <span className="line-clamp-1 text-slate-700">{postData.cause || '-'}</span></li>
-                        <li className="flex gap-2"><span className="text-indigo-600 font-bold shrink-0">🚀 해결:</span> <span className="line-clamp-1 text-slate-700">{solutionSteps[0] || '-'}</span></li>
-                        <li className="flex gap-2"><span className="text-green-600 font-bold shrink-0">✨ 효과:</span> <span className="line-clamp-1 text-slate-700">{postData.conclusion || '-'}</span></li>
-                      </ul>
-                    </div>
-
-                    {/* Content Prose */}
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-base font-black text-slate-900 flex items-center gap-2 mb-2"><span className="bg-indigo-600 text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px]">1</span> 발생 원인 및 문제점</h3>
+        </div>
+      </div>
+    </div>
+  );
+}enter gap-2 mb-2"><span className="bg-indigo-600 text-white w-5 h-5 rounded-md flex items-center justify-center text-[10px]">1</span> 발생 원인 및 문제점</h3>
                         <p className="bg-white border border-slate-100 shadow-sm p-4 rounded-xl text-[13px] text-slate-600 leading-relaxed"><strong className="text-red-600">🚨 문제 상황:</strong><br/>{postData.problem || '-'}<br/><br/><strong className="text-indigo-600">🔍 원인 분석:</strong><br/>{postData.cause || '-'}</p>
                       </div>
                       
