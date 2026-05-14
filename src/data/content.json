@@ -1,31 +1,79 @@
 {
   "toolCategories": [
     {
-      "id": "career",
-      "name": "직장인·커리어",
-      "icon": "👔",
-      "description": "연차, 수당, 이직 등 커리어 최적화 도구"
-    },
-    {
       "id": "finance",
-      "name": "가계·자산",
+      "name": "금융 및 경제",
       "icon": "💰",
-      "description": "구독료, 대출, 생활 물가 비교 도구"
+      "description": "대출 이자, 예적금 만기, 연봉 실수령액, 주식 평단가"
     },
     {
-      "id": "lifestyle",
-      "name": "육아·살림",
-      "icon": "🏠",
-      "description": "아이 발달, 지원금, 유통기한 관리 도구"
+      "id": "tax",
+      "name": "세금 및 정책",
+      "icon": "🏛️",
+      "description": "증여세, 건강보험료, 종합소득세, 청약 가점 계산"
     },
     {
-      "id": "ai",
-      "name": "AI·자동화",
-      "icon": "🤖",
-      "description": "API 비용, 프롬프트 최적화 도구"
+      "id": "welfare",
+      "name": "노후 및 복지",
+      "icon": "👵",
+      "description": "국민연금, 기초연금, 실업급여 계산"
+    },
+    {
+      "id": "math",
+      "name": "생활 속 수학",
+      "icon": "🧮",
+      "description": "부가가치세, 인플레이션, 단가 비교 계산"
     }
   ],
   "tools": [
+    {
+      "id": "income-tax-calc",
+      "categoryId": "tax",
+      "name": "종합소득세 예상 계산기",
+      "description": "프리랜서 및 개인사업자를 위한 5월 종합소득세 예상 세액을 빠르게 계산합니다.",
+      "path": "/tools/income-tax-calc",
+      "icon": "🧾"
+    },
+    {
+      "id": "health-insurance-calc",
+      "categoryId": "tax",
+      "name": "지역 건강보험료 계산기",
+      "description": "재산, 소득, 자동차를 기준으로 지역가입자 전환 시 예상 건강보험료를 알아봅니다.",
+      "path": "/tools/health-insurance-calc",
+      "icon": "🏥"
+    },
+    {
+      "id": "net-salary-calc",
+      "categoryId": "finance",
+      "name": "연봉 실수령액 계산기",
+      "description": "4대 보험 및 소득세를 공제한 정확한 매월 실수령액을 확인하세요.",
+      "path": "/tools/net-salary-calc",
+      "icon": "💸"
+    },
+    {
+      "id": "stock-average-calc",
+      "categoryId": "finance",
+      "name": "주식 평단가(물타기) 계산기",
+      "description": "추가 매수 시 변동되는 최종 평균 단가와 수익률을 1초 만에 확인하세요.",
+      "path": "/tools/stock-average-calc",
+      "icon": "📈"
+    },
+    {
+      "id": "savings-calc",
+      "categoryId": "finance",
+      "name": "예적금 만기 수령액 계산기",
+      "description": "일반과세, 비과세 등 조건에 따른 실제 수령액을 정확히 계산합니다.",
+      "path": "/tools/savings-calc",
+      "icon": "🏦"
+    },
+    {
+      "id": "vat-calc",
+      "categoryId": "math",
+      "name": "부가가치세 (별도/포함) 계산기",
+      "description": "견적서를 쓸 때 세전 금액과 세후 금액을 빠르게 역산합니다.",
+      "path": "/tools/vat-calc",
+      "icon": "🧾"
+    },
     {
       "id": "vacation-calc",
       "categoryId": "career",

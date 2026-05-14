@@ -2,17 +2,12 @@ import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Home from './pages/Home';
-import Category from './pages/Category';
-import PostDetail from './pages/PostDetail';
-import Admin from './pages/Admin';
-import PolicyPage from './pages/PolicyPage';
-import VacationCalculator from './pages/tools/VacationCalculator';
-import LoanCalculator from './pages/tools/LoanCalculator';
-import ChildGrowthCalculator from './pages/tools/ChildGrowthCalculator';
-import WageCalculator from './pages/tools/WageCalculator';
-import TurnoverSimulator from './pages/tools/TurnoverSimulator';
-import SubscriptionManager from './pages/tools/SubscriptionManager';
-import UnitPriceChecker from './pages/tools/UnitPriceChecker';
+import VatCalculator from './pages/tools/math/VatCalculator';
+import SavingsCalculator from './pages/tools/finance/SavingsCalculator';
+import StockAverageCalculator from './pages/tools/finance/StockAverageCalculator';
+import IncomeTaxCalculator from './pages/tools/tax/IncomeTaxCalculator';
+import HealthInsuranceCalculator from './pages/tools/tax/HealthInsuranceCalculator';
+import NetSalaryCalculator from './pages/tools/finance/NetSalaryCalculator';
 
 function App() {
   return (
@@ -21,17 +16,12 @@ function App() {
       <div className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/category/:categoryId" element={<Category />} />
-          <Route path="/post/:slug" element={<PostDetail />} />
-          <Route path="/policy/:type" element={<PolicyPage />} />
-          <Route path="/secret-hub" element={<Admin />} />
-          <Route path="/tools/vacation-calc" element={<VacationCalculator />} />
-          <Route path="/tools/wage-calc" element={<WageCalculator />} />
-          <Route path="/tools/turnover-calc" element={<TurnoverSimulator />} />
-          <Route path="/tools/loan-calc" element={<LoanCalculator />} />
-          <Route path="/tools/subscription-manager" element={<SubscriptionManager />} />
-          <Route path="/tools/unit-price-checker" element={<UnitPriceChecker />} />
-          <Route path="/tools/child-growth-calc" element={<ChildGrowthCalculator />} />
+          <Route path="/tools/vat-calc" element={<VatCalculator />} />
+          <Route path="/tools/savings-calc" element={<SavingsCalculator />} />
+          <Route path="/tools/stock-average-calc" element={<StockAverageCalculator />} />
+          <Route path="/tools/income-tax-calc" element={<IncomeTaxCalculator />} />
+          <Route path="/tools/health-insurance-calc" element={<HealthInsuranceCalculator />} />
+          <Route path="/tools/net-salary-calc" element={<NetSalaryCalculator />} />
           <Route path="*" element={<div className="flex items-center justify-center min-h-[60vh] font-bold text-slate-400">404: 페이지를 찾을 수 없습니다.</div>} />
         </Routes>
       </div>

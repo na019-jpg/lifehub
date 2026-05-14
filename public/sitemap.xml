@@ -6,44 +6,144 @@
     <priority>1</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/clothing</loc>
+    <loc>https://lifestyle-hub.co.kr/category/career</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/food</loc>
+    <loc>https://lifestyle-hub.co.kr/category/finance</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/housing</loc>
+    <loc>https://lifestyle-hub.co.kr/category/lifestyle</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/health</loc>
+    <loc>https://lifestyle-hub.co.kr/category/ai</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/economy</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://lifestyle-hub.co.kr/post/내-통장을-털어간-범인은-누구--잊고-있던-구독료-0원-만드는--지출-재판--가이드</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-05</lastmod>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/digital</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://lifestyle-hub.co.kr/post/라이엇-게임만-하면-컴이-렉--뱅가드-충돌-해결하고-프레임-2배-올리는-법</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-05</lastmod>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/travel</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://lifestyle-hub.co.kr/post/이서진의--사장님-마인드---주방을-5성급-호텔처럼-바꾸는-수납과-위생의-정석</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-05</lastmod>
   </url>
   <url>
-    <loc>https://lifestyle-hub.co.kr/category/pets</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://lifestyle-hub.co.kr/post/서울숲-포켓몬-성지-공략--배터리-걱정-없이-전설-잡는-스마트-여행-비법</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-01</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/환율-1-400원-시대--해외여행-경비-절반으로-줄이는-환전의-기술-3가지</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-01</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/게임-렉-정복--수명-2배-늘리는-기기-관리-비결</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-01</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/사우디-국부펀드--내-지갑-채울-기회--1-의-비밀</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-01</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/미스트롯4-본방사수--100세까지-활력-넘치는--찐--팬심-건강-관리법-</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-01</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/갑작스러운--해고--통보--멘붕-대신--월-200만-원--챙기는-슬기로운-위기-탈출법-</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-01</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/월세-20만원-캐시백--모르면-700만원-손해-보는--청년-주거-지원--필살기</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-04-30</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/예쁘다고-샀다가--독--된다--반려동물-목숨-위협하는-금기-식물-5가지</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-04-30</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777472537070-0</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-04-29</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777472561820-1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-04-29</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777472586968-2</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-04-29</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/커피-쏟았다고요--당장--이것--바르세요--아끼는-옷-살리는-커피-얼룩-완벽-제거법</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-04-29</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777465451956-0</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-14</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777465474618-1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-14</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777465491873-2</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-14</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777465511570-3</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-14</lastmod>
+  </url>
+  <url>
+    <loc>https://lifestyle-hub.co.kr/post/draft-1777465529951-4</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-14</lastmod>
   </url>
   <url>
     <loc>https://lifestyle-hub.co.kr/post/검은-옷-먼지-10초-만에-완벽-제거--새-옷처럼-관리하는-5가지-비법</loc>
