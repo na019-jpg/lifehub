@@ -8,6 +8,7 @@ import StockAverageCalculator from './pages/tools/finance/StockAverageCalculator
 import IncomeTaxCalculator from './pages/tools/tax/IncomeTaxCalculator';
 import HealthInsuranceCalculator from './pages/tools/tax/HealthInsuranceCalculator';
 import NetSalaryCalculator from './pages/tools/finance/NetSalaryCalculator';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/tools/income-tax-calc" element={<IncomeTaxCalculator />} />
           <Route path="/tools/health-insurance-calc" element={<HealthInsuranceCalculator />} />
           <Route path="/tools/net-salary-calc" element={<NetSalaryCalculator />} />
+          <Route path="/secret-hub" element={<Admin />} />
           <Route path="*" element={<div className="flex items-center justify-center min-h-[60vh] font-bold text-slate-400">404: 페이지를 찾을 수 없습니다.</div>} />
         </Routes>
       </div>
