@@ -228,14 +228,30 @@ export default function Admin() {
             <h2 className="text-2xl font-black text-slate-800 mb-6">📝 AI 포스팅 생성</h2>
             
             <div className="flex flex-col gap-3 mb-2">
-              <input 
-                type="text" 
-                value={tistoryKeyword}
-                onChange={(e) => setTistoryKeyword(e.target.value)}
-                placeholder="키워드를 입력하거나 좌측 트렌드를 클릭하세요."
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-lg"
-                onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
-              />
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input 
+                  type="text" 
+                  value={tistoryKeyword}
+                  onChange={(e) => setTistoryKeyword(e.target.value)}
+                  placeholder="키워드를 입력하거나 좌측 트렌드를 클릭하세요."
+                  className="flex-1 w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-lg"
+                  onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
+                />
+                <button
+                  onClick={handleGetRecommendation}
+                  disabled={recommendLoading}
+                  className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold px-6 py-4 rounded-2xl transition disabled:bg-slate-100 disabled:text-slate-400 shrink-0 flex items-center justify-center gap-2"
+                >
+                  {recommendLoading ? '분석 중...' : '💡 링크/이미지 추천'}
+                </button>
+              </div>
+              
+              {recommendationResult && (
+                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl animate-fade-in text-sm text-indigo-900 whitespace-pre-wrap leading-relaxed shadow-sm mt-2">
+                  <strong className="flex items-center gap-1 text-indigo-700 mb-2"><span className="text-base">💡</span> AI 전략 추천</strong>
+                  {recommendationResult}
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-3">
                 <input 
                   type="text" 
