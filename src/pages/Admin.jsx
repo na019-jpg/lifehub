@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import SeoHelmet from '../components/SeoHelmet';
 import { generateTistoryPost } from '../utils/gemini';
 
