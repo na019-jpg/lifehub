@@ -47,6 +47,10 @@ export async function generateTistoryPost(keyword, targetLink = '/m') {
      <ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-layout-key="-hv-h+25-5w+88" data-ad-client="ca-pub-4969939875697438" data-ad-slot="1636074930"></ins>
      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
      \`\`\`
+   - [애드센스 자동 광고]: HTML 코드 최상단(JSON-LD 스크립트 바로 아래)에 아래 자동 광고 스크립트를 1회 반드시 삽입하세요.
+     \`\`\`html
+     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"></script>
+     \`\`\`
    - [AEO FAQ 세션]: 글 하단에 사용자가 실제로 검색할 법한 질문 3~5개를 Q&A 형식으로 작성.
    - [결론]: 내용을 요약하고 독자에게 추가 행동 유도
 
@@ -73,7 +77,7 @@ export async function generateTistoryPost(keyword, targetLink = '/m') {
   "aeoStrategy": "AI 검색 엔진(AEO)에 노출되기 위한 해당 글의 핵심 답변 요약 전략",
   "adPlacementGuide": "전면광고 유도 버튼의 효과적인 배치 위치 및 유도 문구 팁",
   "title": "클릭을 유발하는 고단가 최적화 제목",
-  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 <script type='application/ld+json'> 형태의 구글 자동 색인 구조화 데이터를 포함할 것. 글 중간에 제공된 애드센스 광고 코드 2가지를 적절히 배치할 것. 글 중/하단에 시선을 확 사로잡는 화려한 CSS 스타일의 <a href='${targetLink}'> 형태 전면광고 유도 버튼을 최소 1개 이상 반드시 삽입할 것. 본문 길이는 매우 길게(1500자 이상) 작성할 것."
+  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 <script type='application/ld+json'> 형태의 구글 자동 색인 구조화 데이터와 함께 애드센스 자동 광고 스크립트를 포함할 것. 글 중간에 제공된 애드센스 광고 코드 2가지를 적절히 배치할 것. 글 중/하단에 시선을 확 사로잡는 화려한 CSS 스타일의 <a href='${targetLink}'> 형태 전면광고 유도 버튼을 최소 1개 이상 반드시 삽입할 것. 본문 길이는 매우 길게(1500자 이상) 작성할 것."
 }
 `;
 
