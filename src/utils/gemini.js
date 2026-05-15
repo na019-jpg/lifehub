@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-export async function generateTistoryPost(keyword) {
+export async function generateTistoryPost(keyword, targetLink = '/m') {
   if (!genAI) {
     throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
   }
@@ -33,7 +33,7 @@ export async function generateTistoryPost(keyword) {
    - [제목]: 클릭을 부르는 '숫자'와 '혜택'이 포함된 매력적인 제목 (예: "${currentYear}년 ~ 조건 3가지")
    - [AEO 다이렉트 답변]: 서론 직후, 독자가 가장 궁금해할 핵심 질문에 대한 결론을 1~2문장으로 명확히 제시 (AI 스니펫 용)
    - [본문]: 최소 3개 이상의 소제목(H2, H3)으로 구분된 논리적 설명. 데이터 신뢰도를 높이는 표(Table) 적극 활용.
-   - [전면광고 유도 링크 버튼]: 본문 흐름상 독자가 가장 궁금해할 타이밍(예: 지원금 조회, 한도 확인, 내 조건 알아보기 등)에 **시각적으로 돋보이는 커다란 <a> 태그 버튼**을 넣으세요. 버튼 클릭 시 애드센스 전면광고가 뜰 확률을 높이기 위한 장치입니다. (예: \`<div style="text-align:center; margin: 40px 0;"><a href="/m" style="display:inline-block; padding:18px 40px; background:#2563eb; color:#fff; font-size:18px; font-weight:bold; border-radius:12px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.1);">👉 내 예상 지원금/환급금 1분 만에 조회하기</a></div>\`)
+   - [전면광고 유도 링크 버튼]: 본문 흐름상 독자가 가장 궁금해할 타이밍(예: 지원금 조회, 한도 확인, 내 조건 알아보기 등)에 **시각적으로 돋보이는 커다란 <a> 태그 버튼**을 넣으세요. 버튼 클릭 시 애드센스 전면광고가 뜰 확률을 높이기 위한 장치입니다. (예: \`<div style="text-align:center; margin: 40px 0;"><a href="${targetLink}" style="display:inline-block; padding:18px 40px; background:#2563eb; color:#fff; font-size:18px; font-weight:bold; border-radius:12px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.1);">👉 내 예상 지원금/환급금 1분 만에 조회하기</a></div>\`)
    - [AEO FAQ 세션]: 글 하단에 사용자가 실제로 검색할 법한 질문 3~5개를 Q&A 형식으로 작성.
    - [결론]: 내용을 요약하고 독자에게 추가 행동 유도
 
@@ -60,7 +60,7 @@ export async function generateTistoryPost(keyword) {
   "aeoStrategy": "AI 검색 엔진(AEO)에 노출되기 위한 해당 글의 핵심 답변 요약 전략",
   "adPlacementGuide": "전면광고 유도 버튼의 효과적인 배치 위치 및 유도 문구 팁",
   "title": "클릭을 유발하는 고단가 최적화 제목",
-  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 <script type='application/ld+json'> 형태의 구글 자동 색인 구조화 데이터를 포함할 것. 글 중/하단에 시선을 확 사로잡는 화려한 CSS 스타일의 <a href='/m'> 형태 전면광고 유도 버튼을 최소 1개 이상 반드시 삽입할 것. 본문 길이는 매우 길게(1500자 이상) 작성할 것."
+  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 <script type='application/ld+json'> 형태의 구글 자동 색인 구조화 데이터를 포함할 것. 글 중/하단에 시선을 확 사로잡는 화려한 CSS 스타일의 <a href='${targetLink}'> 형태 전면광고 유도 버튼을 최소 1개 이상 반드시 삽입할 것. 본문 길이는 매우 길게(1500자 이상) 작성할 것."
 }
 `;
 

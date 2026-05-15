@@ -50,6 +50,7 @@ export default function Admin() {
   
   const [activeCategory, setActiveCategory] = useState('finance');
   const [tistoryKeyword, setTistoryKeyword] = useState('');
+  const [targetLink, setTargetLink] = useState('/m');
   const [tistoryAiLoading, setTistoryAiLoading] = useState(false);
   const [tistoryAiResult, setTistoryAiResult] = useState(null);
 
@@ -97,7 +98,7 @@ export default function Admin() {
     setTistoryAiLoading(true);
     setTistoryAiResult(null);
     try {
-      const result = await generateTistoryPost(tistoryKeyword);
+      const result = await generateTistoryPost(tistoryKeyword, targetLink || '/m');
       setTistoryAiResult(result);
     } catch (err) {
       alert("AI 생성 실패: " + err.message);
@@ -198,22 +199,32 @@ export default function Admin() {
             
             <h2 className="text-2xl font-black text-slate-800 mb-6">📝 AI 포스팅 생성</h2>
             
-            <div className="flex flex-col sm:flex-row gap-3 mb-2">
+            <div className="flex flex-col gap-3 mb-2">
               <input 
                 type="text" 
                 value={tistoryKeyword}
                 onChange={(e) => setTistoryKeyword(e.target.value)}
                 placeholder="키워드를 입력하거나 좌측 트렌드를 클릭하세요."
-                className="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-lg"
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-lg"
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
               />
-              <button 
-                onClick={handleGenerateTistoryAi}
-                disabled={tistoryAiLoading}
-                className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 py-4 rounded-2xl shadow-lg transition disabled:bg-slate-300 shrink-0 text-lg flex items-center justify-center gap-2"
-              >
-                {tistoryAiLoading ? '작성 중...' : '✨ 글쓰기'}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input 
+                  type="text" 
+                  value={targetLink}
+                  onChange={(e) => setTargetLink(e.target.value)}
+                  placeholder="전면광고 유도 버튼 링크 (비워두면 기본값 '/m' 적용)"
+                  className="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-medium text-base text-blue-600"
+                  onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
+                />
+                <button 
+                  onClick={handleGenerateTistoryAi}
+                  disabled={tistoryAiLoading}
+                  className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 py-4 rounded-2xl shadow-lg transition disabled:bg-slate-300 shrink-0 text-lg flex items-center justify-center gap-2"
+                >
+                  {tistoryAiLoading ? '작성 중...' : '✨ 글쓰기'}
+                </button>
+              </div>
             </div>
             <p className="text-sm text-slate-500 mb-8 ml-2">포스팅 생성에는 약 30초~1분 정도 소요될 수 있습니다.</p>
 
