@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SeoHelmet from '../components/SeoHelmet';
-import { generateTistoryPost } from '../utils/gemini';
+import { generateTistoryPost, recommendImageAndLink } from '../utils/gemini';
 
 // --- Mock Data for Trends ---
 const TREND_DATA = {
@@ -53,6 +53,8 @@ export default function Admin() {
   const [targetLink, setTargetLink] = useState('/m');
   const [tistoryAiLoading, setTistoryAiLoading] = useState(false);
   const [tistoryAiResult, setTistoryAiResult] = useState(null);
+  const [recommendLoading, setRecommendLoading] = useState(false);
+  const [recommendationResult, setRecommendationResult] = useState(null);
 
   const [trendingKeywords, setTrendingKeywords] = useState([]);
   const [trendsLoading, setTrendsLoading] = useState(false);
@@ -88,6 +90,23 @@ export default function Admin() {
     e.preventDefault();
     if (password === '0000') setIsAuthenticated(true);
     else alert('비밀번호가 일치하지 않습니다.');
+  };
+
+  const handleGetRecommendation = async () => {
+    if (!tistoryKeyword.trim()) {
+      alert('키워드를 먼저 입력해주세요.');
+      return;
+    }
+    setRecommendLoading(true);
+    setRecommendationResult(null);
+    try {
+      const result = await recommendImageAndLink(tistoryKeyword);
+      setRecommendationResult(result);
+    } catch (err) {
+      alert("추천 실패: " + err.message);
+    } finally {
+      setRecommendLoading(false);
+    }
   };
 
   const handleGenerateTistoryAi = async () => {

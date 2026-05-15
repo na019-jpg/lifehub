@@ -94,3 +94,30 @@ export async function generateTistoryPost(keyword, targetLink = '/m') {
     throw error;
   }
 }
+
+export async function recommendImageAndLink(keyword) {
+  if (!genAI) {
+    throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
+  }
+
+  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+
+  const prompt = `
+당신은 구글 애드센스 및 제휴 마케팅 전문가입니다.
+사용자가 티스토리 블로그에 포스팅할 키워드(주제)를 주면, 해당 포스팅에서 수익을 극대화하기 위해 어떤 "이미지"를 삽입하고 어떤 "전면광고 유도 버튼 링크(제휴 링크 등)"를 연결하면 좋을지 3-4문장으로 짧고 명확하게 추천해주세요.
+
+사용자 키워드: "${keyword}"
+
+답변 형식 예시:
+- 추천 이미지: 지원금 지급액 표, 건강보험료 모의계산 화면 캡처 등 독자의 시선을 끄는 정보성 이미지
+- 추천 링크: 정부24 지원금 조회 페이지, 또는 쿠팡 파트너스 건강영양제 기획전 링크를 연결하여 직접적인 행동을 유도하세요.
+`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (error) {
+    console.error('Recommendation Error:', error);
+    throw error;
+  }
+}
