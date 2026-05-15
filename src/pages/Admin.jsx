@@ -41,7 +41,7 @@ const CATEGORIES = [
   { id: 'insurance', name: '보험/법률', icon: '⚖️' },
   { id: 'travel', name: '여행/관광/항공', icon: '✈️' },
   { id: 'car', name: '자동차/전기차', icon: '🚗' },
-  { id: 'health', name: '의학지식/건강/노인', icon: '🏥' }
+  { id: 'health', name: '생활건강/영양제/운동', icon: '🌿' }
 ];
 
 export default function Admin() {
