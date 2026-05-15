@@ -24,6 +24,7 @@ export async function generateTistoryPost(keyword, targetLink = '/m') {
 2. **구조적 SEO & 자동 색인**: 구글 봇이 문서의 위계를 명확히 파악할 수 있도록 H2, H3 태그를 구조화하고, **JSON-LD 스크립트**를 생성하여 검색 포털이 글을 즉각 색인(Index)하도록 돕습니다.
 3. **AEO(Answer Engine Optimization) 최적화**: 퍼플렉시티, 챗GPT, 구글 SGE 등 AI 검색 엔진이 답변을 바로 추출할 수 있도록 직관적이고 명확한 답변 구조를 설계합니다.
 4. **전면광고 수익 극대화**: 사용자가 무조건 클릭할 수밖에 없는 **전면광고 유도용 내부 링크 버튼**을 본문 중/하단에 배치하여 수익을 극대화합니다.
+5. **체류시간 극대화**: 사용자가 정보를 끝까지 읽도록 유도하여 체류시간을 극대화하고 하단 광고 도달률 및 클릭률(CTR)을 높입니다.
 
 # Guidelines for Writing
 1. **문체**: 신뢰감을 주는 '~습니다', '~합니다' 등의 다나까체를 기본으로 사용하며, 전문적인 톤을 유지합니다.
@@ -31,8 +32,9 @@ export async function generateTistoryPost(keyword, targetLink = '/m') {
 3. **구조 (AEO, SEO, CTR 결합)**:
    - [자동 색인 JSON-LD]: HTML 코드 **최상단**에 구글 검색엔진이 좋아하는 \`<script type="application/ld+json"> ... </script>\` 형식의 Article 스키마 데이터를 완벽히 작성하여 삽입합니다. (headline, description, datePublished 등 포함)
    - [제목]: 클릭을 부르는 '숫자'와 '혜택'이 포함된 매력적인 제목 (예: "${currentYear}년 ~ 조건 3가지")
+   - [서론]: 독자의 문제(Pain Point)에 깊이 공감하고, 이 글을 통해 확실한 해결책을 얻을 수 있음을 암시하는 후킹(Hooking) 문장으로 초반 이탈률을 방지하세요.
    - [AEO 다이렉트 답변]: 서론 직후, 독자가 가장 궁금해할 핵심 질문에 대한 결론을 1~2문장으로 명확히 제시 (AI 스니펫 용)
-   - [본문]: 최소 3개 이상의 소제목(H2, H3)으로 구분된 논리적 설명. 데이터 신뢰도를 높이는 표(Table) 적극 활용.
+   - [본문]: 최소 3개 이상의 소제목(H2, H3)으로 구분된 논리적 설명. 데이터 신뢰도를 높이는 표(Table) 적극 활용. 본문 중간중간 작성자가 이미지를 첨부하기 좋은 위치에 \`<!-- 여기에 [이해를 돕는 LTV 계산 예시] 이미지를 삽입하세요 -->\` 형태의 HTML 주석으로 이미지 삽입 가이드를 남겨주세요.
    - [전면광고 유도 링크 버튼]: 본문 흐름상 독자가 가장 궁금해할 타이밍(예: 지원금 조회, 한도 확인, 내 조건 알아보기 등)에 **시각적으로 돋보이는 커다란 <a> 태그 버튼**을 넣으세요. 버튼 클릭 시 애드센스 전면광고가 뜰 확률을 높이기 위한 장치입니다. (예: \`<div style="text-align:center; margin: 40px 0;"><a href="${targetLink}" style="display:inline-block; padding:18px 40px; background:#2563eb; color:#fff; font-size:18px; font-weight:bold; border-radius:12px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.1);">👉 내 예상 지원금/환급금 1분 만에 조회하기</a></div>\`)
    - [애드센스 중간 광고]: 본문 소제목(H2, H3) 사이나 단락과 단락 사이 등 문맥이 전환되는 시점에 아래 2개의 애드센스 코드를 각각 최소 1회 이상 삽입하세요.
      (광고 코드 1 - 디스플레이)
@@ -56,7 +58,7 @@ export async function generateTistoryPost(keyword, targetLink = '/m') {
 
 # Target
 - **3050 타겟 블로그 운영 전략**
-- 언어의 변화: 딱딱한 용어 대신 3050 여성이 공감할 수 있는 언어로 풀어냅니다.
+- 언어의 변화: 딱딱한 전문 용어를 3050 여성이 쉽게 공감하고 이해할 수 있는 일상 언어로 완벽히 변환합니다. (예: "주택담보대출 LTV 규제 완화" -> "우리 집 대출, 지금 갈아타면 얼마나 아낄 수 있을까? 주부도 이해하는 LTV 정리")
 - 고단가 키워드를 본문 전체에 자연스럽게 녹여냅니다.
 
 # Freshness Constraint
