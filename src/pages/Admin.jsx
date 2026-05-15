@@ -54,35 +54,35 @@ export default function Admin() {
   const [tistoryAiLoading, setTistoryAiLoading] = useState(false);
   const [tistoryAiResult, setTistoryAiResult] = useState(null);
 
-  // 날짜 기반 렌덤 목데이터 추출 (매일 10시 갱신을 흉내내기 위해 오늘 날짜로 시드 생성)
-  const todaysTrends = useMemo(() => {
-    const today = new Date();
-    // 오전 10시 이전이면 어제 날짜를 기준으로 함
-    if (today.getHours() < 10) today.setDate(today.getDate() - 1);
-    
-    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-    
-    // 카테고리별로 10개씩 추출
-    const getTrends = (catId) => {
-      const list = [...TREND_DATA[catId]];
-      // Fisher-Yates shuffle with pseudo-random seed
-      let m = list.length, t, i;
-      let currentSeed = seed;
-      while (m) {
-        currentSeed = (currentSeed * 9301 + 49297) % 233280;
-        i = Math.floor((currentSeed / 233280) * m--);
-        t = list[m];
-        list[m] = list[i];
-        list[i] = t;
-      }
-      return list.slice(0, 10);
-    };
+  const [trendingKeywords, setTrendingKeywords] = useState([]);
+  const [trendsLoading, setTrendsLoading] = useState(false);
 
-    return CATEGORIES.reduce((acc, cat) => {
-      acc[cat.id] = getTrends(cat.id);
-      return acc;
-    }, {});
-  }, []);
+  useEffect(() => {
+    const fetchTrends = async () => {
+      setTrendsLoading(true);
+      setTrendingKeywords([]);
+      try {
+        const keywords = TREND_DATA[activeCategory];
+        const res = await fetch('/api/naver-trends', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keywords })
+        });
+        const data = await res.json();
+        if (data.trends) {
+          setTrendingKeywords(data.trends.slice(0, 10));
+        } else {
+          throw new Error(data.error || 'Failed to fetch trends');
+        }
+      } catch (err) {
+        console.error('Naver API failed, falling back to mock:', err);
+        setTrendingKeywords(TREND_DATA[activeCategory].slice(0, 10));
+      } finally {
+        setTrendsLoading(false);
+      }
+    };
+    fetchTrends();
+  }, [activeCategory]);
 
   const handleLogin = (e) => {
     e.preventDefault();
