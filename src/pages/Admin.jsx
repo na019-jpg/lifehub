@@ -77,8 +77,6 @@ export default function Admin() {
   const [recommendationResult, setRecommendationResult] = useState(null);
 
   // 새롭게 추가된 고급 SEO 설정 상태들
-  const [subKeywords, setSubKeywords] = useState('');
-  const [relatedKeywords, setRelatedKeywords] = useState('');
   const [blogPurpose, setBlogPurpose] = useState('1');
   const [randomPersona, setRandomPersona] = useState('');
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
@@ -147,8 +145,6 @@ export default function Admin() {
     try {
       const result = await generateTistoryPost({
         mainKeyword: tistoryKeyword,
-        subKeywords,
-        relatedKeywords,
         blogPurpose,
         randomPersona,
         targetLink: targetLink || '/m'
@@ -170,8 +166,6 @@ export default function Admin() {
 
   const handleTrendClick = (keyword) => {
     setTistoryKeyword(keyword);
-    setSubKeywords('');
-    setRelatedKeywords('');
     setTistoryAiResult(null);
   };
 
@@ -337,30 +331,6 @@ export default function Admin() {
 
                 {showAdvancedSettings && (
                   <div className="p-6 bg-white border-t border-slate-100 space-y-6 animate-fade-in">
-                    {/* 서브 및 연관 키워드 입력 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1.5">서브 키워드 (5개, 쉼표 구분)</label>
-                        <input 
-                          type="text" 
-                          value={subKeywords}
-                          onChange={(e) => setSubKeywords(e.target.value)}
-                          placeholder="예: 신청방법, 가입 조건, 금리 비교, 혜택, 구비서류"
-                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition text-sm font-medium"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1.5">연관 키워드 (5개, 쉼표 구분)</label>
-                        <input 
-                          type="text" 
-                          value={relatedKeywords}
-                          onChange={(e) => setRelatedKeywords(e.target.value)}
-                          placeholder="예: 청년통장, 적금 추천, 비과세 혜택, 모바일 신청, 하나은행"
-                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition text-sm font-medium"
-                        />
-                      </div>
-                    </div>
-
                     {/* 글의 목적 선택 */}
                     <div>
                       <label className="block text-xs font-bold text-slate-500 mb-2">글의 목적 (논리 구조 동기화)</label>
@@ -423,18 +393,10 @@ export default function Admin() {
                     <span className="font-black text-slate-700 text-sm">{tistoryKeyword || '(메인 키워드를 입력해주세요)'}</span>
                   </div>
                   <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-inner">
-                    <span className="text-[10px] font-bold text-slate-400 block mb-0.5">🏷️ 서브 키워드</span>
-                    {subKeywords.trim() ? (
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {subKeywords.split(',').map((kw, idx) => (
-                          <span key={idx} className="bg-slate-50 text-slate-600 text-[10px] font-extrabold px-2 py-0.5 rounded border border-slate-100">
-                            {kw.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-slate-400 text-xs font-medium block mt-0.5">(등록된 서브 키워드 없음)</span>
-                    )}
+                    <span className="text-[10px] font-bold text-slate-400 block mb-0.5">🏷️ 서브 / 연관 키워드</span>
+                    <span className="text-emerald-600 text-xs font-extrabold block mt-0.5">
+                      ✨ 메인 키워드 분석을 통해 AdSense 고단가 키워드 10개 자동 추출 및 본문 배치
+                    </span>
                   </div>
                 </div>
               </div>
@@ -471,27 +433,17 @@ export default function Admin() {
                 <h3 className="text-xl font-black text-slate-800 mb-2">✨ AI 포스팅 자동 작성 중</h3>
                 <p className="text-slate-500 font-medium text-sm mb-6">구글 SEO 최적화 및 AEO 검색 노출을 위한 최적의 구조로 글을 구성하고 있습니다.</p>
                 
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm max-w-md w-full text-left space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider pb-1 border-b">
-                    <span>Targeting Info</span>
-                    <span className="text-blue-600 animate-pulse">● Generation in progress</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 block mb-0.5">🎯 메인 키워드</span>
-                    <span className="font-extrabold text-slate-800 text-base">{tistoryKeyword}</span>
-                  </div>
-                  {subKeywords.trim() && (
-                    <div>
-                      <span className="text-xs font-bold text-slate-400 block mb-0.5">🏷️ 서브 키워드</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {subKeywords.split(',').map((kw, idx) => (
-                          <span key={idx} className="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-md border border-slate-200">
-                            {kw.trim()}
-                          </span>
-                        ))}
-                      </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm max-w-md w-full text-left space-y-4">
+                  <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
+                      <span className="text-[10px] font-bold text-slate-400 block mb-1">메인 키워드</span>
+                      <span className="font-black text-slate-800 text-base">{tistoryKeyword}</span>
                     </div>
-                  )}
+                    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
+                      <span className="text-[10px] font-bold text-slate-400 block mb-1">서브 / 연관 키워드</span>
+                      <span className="text-slate-500 text-xs font-semibold block leading-relaxed mt-0.5">
+                        상단의 <strong>[키워드 분석]</strong> 첫머리에서 자동 타겟팅 적용된 키워드들을 직접 확인해 볼 수 있습니다.
+                      </span>
+                    </div>
                 </div>
               </div>
             )}
@@ -527,18 +479,10 @@ export default function Admin() {
                       <span className="font-black text-slate-800 text-base">{tistoryKeyword}</span>
                     </div>
                     <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
-                      <span className="text-[10px] font-bold text-slate-400 block mb-1">서브 키워드</span>
-                      {subKeywords.trim() ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {subKeywords.split(',').map((kw, idx) => (
-                            <span key={idx} className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-md border border-slate-200">
-                              {kw.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 text-xs font-medium">(지정된 서브 키워드 없음)</span>
-                      )}
+                      <span className="text-[10px] font-bold text-slate-400 block mb-1">서브 / 연관 키워드</span>
+                      <span className="text-slate-500 text-xs font-semibold block leading-relaxed mt-0.5">
+                        상단의 <strong>[키워드 분석]</strong> 첫머리에서 자동 타겟팅 적용된 키워드들을 직접 확인해 볼 수 있습니다.
+                      </span>
                     </div>
                   </div>
                 </div>
