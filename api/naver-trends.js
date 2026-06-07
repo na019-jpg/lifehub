@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
     const today = new Date();
     const endDate = today.toISOString().split('T')[0];
-    const startDate = new Date(today.setDate(today.getDate() - 30)).toISOString().split('T')[0];
+    const startDate = new Date(today.setDate(today.getDate() - 14)).toISOString().split('T')[0];
 
     const results = [];
     const baseline = keywords[0];

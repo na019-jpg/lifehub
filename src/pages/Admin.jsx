@@ -250,7 +250,7 @@ export default function Admin() {
               <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">매일 10시 갱신</span>
             </div>
             <p className="text-xs text-indigo-600 mb-4 font-medium leading-relaxed">
-              현재 선택된 <strong className="font-bold">[{CATEGORIES.find(c => c.id === activeCategory)?.name}]</strong> 카테고리의 실제 네이버 급상승 키워드입니다. (최근 30일 기준)
+              현재 선택된 <strong className="font-bold">[{CATEGORIES.find(c => c.id === activeCategory)?.name}]</strong> 카테고리의 실제 네이버 급상승 키워드입니다. (최근 14일 기준)
             </p>
             
             <div className="flex flex-col gap-2 min-h-[400px]">
