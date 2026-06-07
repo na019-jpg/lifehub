@@ -164,6 +164,16 @@ export default function Admin() {
     }).catch(err => alert("복사 실패: " + err));
   };
 
+  const handleCopyHashtags = () => {
+    if (!tistoryAiResult || !tistoryAiResult.hashtags) {
+      alert("복사할 해시태그가 없습니다.");
+      return;
+    }
+    navigator.clipboard.writeText(tistoryAiResult.hashtags).then(() => {
+      alert("✅ 해시태그 목록이 복사되었습니다!\n티스토리 태그 입력창에 붙여넣기 하세요.");
+    }).catch(err => alert("복사 실패: " + err));
+  };
+
   const handleTrendClick = (keyword) => {
     setTistoryKeyword(keyword);
     setTistoryAiResult(null);
@@ -501,6 +511,28 @@ export default function Admin() {
                   <div className="bg-white p-3 rounded-xl font-bold text-slate-800 border border-slate-100 shadow-sm">
                     {tistoryAiResult.title}
                   </div>
+                </div>
+
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+                    <div>
+                      <h4 className="font-black text-slate-800 flex items-center gap-2 text-sm">
+                        <span>🏷️</span> 티스토리 해시태그 복사
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1">메인, 서브, 연관 키워드가 쉼표로 자동 조합된 해시태그 목록입니다.</p>
+                    </div>
+                    <button onClick={handleCopyHashtags} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition whitespace-nowrap">
+                      📋 해시태그 복사하기
+                    </button>
+                  </div>
+                  <input 
+                    readOnly 
+                    type="text"
+                    value={tistoryAiResult.hashtags || ''} 
+                    placeholder="해시태그 생성 중..."
+                    className="w-full p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl outline-none shadow-inner focus:ring-2 focus:ring-emerald-500"
+                    onClick={(e) => e.target.select()}
+                  />
                 </div>
 
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col">
