@@ -1,31 +1,31 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("No API KEY found!");
+  process.exit(1);
+}
 
-export async function generateTistoryPost({
-  mainKeyword,
-  subKeywords = '',
-  relatedKeywords = '',
-  blogPurpose = '1',
-  randomPersona = '',
-  internalLinks = [],
-  targetLink = '/m'
-}) {
-  if (!genAI) {
-    throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
-  }
+const genAI = new GoogleGenerativeAI(apiKey);
+const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+const mainKeyword = "청년도약계좌 조건";
+const subKeywords = "신청방법, 가입 조건, 금리 비교, 혜택, 구비서류";
+const relatedKeywords = "청년통장, 적금 추천, 비과세 혜택, 모바일 신청, 하나은행";
+const blogPurpose = "1";
+const randomPersona = "30대 직장인 육아맘의 친근하고 정보력이 돋보이는 말투 (~했네요, ~더라고요)";
+const internalLinks = [{ title: "청년 주택드림 청약통장 전환 및 혜택 정리", url: "/posts/youth-housing-dream" }];
+const targetLink = "/m/landing-page";
 
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
+const mainKeywordEncoded = encodeURIComponent(mainKeyword);
+const internalLinksStr = JSON.stringify(internalLinks);
 
-  const mainKeywordEncoded = encodeURIComponent(mainKeyword);
-  const internalLinksStr = JSON.stringify(internalLinks);
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth() + 1;
 
-  const prompt = `
+const prompt = `
 # [Role & Objective]
 당신은 구글 SEO(AEO) 및 수익형 블로그 마케팅 전문가이자, 구글의 AI 탐지 알고리즘을 완벽히 우회하는 '인간 다운' 글쓰기 마스터입니다. 
 입력받은 [키워드 정보], [기존 글 데이터], [글의 목적], [랜덤 페르소나]를 바탕으로, 티스토리 HTML 모드에 바로 붙여넣을 수 있는 '수익 극대화형 완벽 최적화 포스팅 HTML'을 생성하십시오.
@@ -40,10 +40,15 @@ export async function generateTistoryPost({
 
 # [Step-by-Step Execution Rules]
 
-### Step 1. 선택된 목적 및 페르소나 동기화 (UI 매핑 완료)
-- 너는 UI에서 선택되어 주입된 {BLOG_PURPOSE} (현재 목적 코드: ${blogPurpose})의 세부 지침(정보/리뷰/비교/노하우/문제해결)에 맞춰 HTML 본문의 뼈대와 태그 구조를 완벽히 빌드하라.
-- 너는 UI에서 선택되어 주입된 {RANDOM_PERSONA} (현재 페르소나 정보: ${randomPersona})의 어조와 캐릭터성(친절/깐깐/큐레이터/야매고수 등)을 100% 빙의하여 문장을 구사하라.
-- 구글의 AI 콘텐츠 패턴 매칭을 무력화하기 위해, 단문과 장문을 불규칙하게 섞고 문장 중간중간 "저도 처음엔 당황했는데", "이게 의외로 놓치기 쉽습니다" 같은 '인간적인 독백/경험형 문장'을 반드시 3회 이상 가미하라.
+### Step 1. 글의 목적 및 페르소나 동기화 (AI Detection Bypass)
+- 지정된 {BLOG_PURPOSE} (현재 목적 코드: ${blogPurpose})의 특성에 맞춰 글의 논리 구조를 작성하십시오.
+  1. 정보전달: 객관적, 인과관계 명확, 요약 강조
+  2. 후기/리뷰: 주관적 만족도, 장단점 균형, 실제 사용감 묘사
+  3. 비교/추천: 대조 표(Table) 활용, 타겟별 추천 분기
+  4. 노하우/꿀팁: 단계별 가이드(Step), 주의사항, 실전 팁
+  5. 문제해결: 증상/문제 원인 분석 -> 명확한 해결책 제시
+- {RANDOM_PERSONA} (현재 페르소나 정보: ${randomPersona})의 어조를 100% 반영하여 모든 문장을 구사하십시오.
+- 구글 패턴 매칭을 회피하기 위해 단문과 장문을 불규칙하게 섞고(Burstiness), 문장 내에 "사실 저도 처음에는~", "많은 분들이 놓치시는데~" 같은 인간적인 경험담/독백 페르소나 어투를 최소 3회 이상 자연스럽게 녹여내어 AI 탐지를 우회하십시오.
 
 ### Step 2. 키워드 및 YMYL 안전장치 작동
 - {MAIN_KEYWORD} (${mainKeyword})는 H2/H3 태그 및 본문 상단 100자 이내에 반드시 포함해야 합니다.
@@ -103,40 +108,55 @@ export async function generateTistoryPost({
 }
 `;
 
+async function run() {
+  console.log("Generating post via Gemini API...");
   try {
-    const result = await model.generateContent(prompt);
-    let text = result.response.text().trim();
-    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    return JSON.parse(text);
+    const response = await model.generateContent(prompt);
+    let text = response.response.text().trim();
+    text = text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim();
+    const result = JSON.parse(text);
+    console.log("SUCCESS!");
+    console.log("Title:", result.title);
+    console.log("Keyword Analysis:", result.keywordAnalysis);
+    console.log("AEO Strategy:", result.aeoStrategy);
+    console.log("HTML length:", result.htmlContent.length);
+    
+    // 검증 포인트 확인
+    const html = result.htmlContent;
+    console.log("\n=== CHECKPOINTS ===");
+    console.log("1. JSON-LD Schema exists:", html.includes("application/ld+json"));
+    console.log("2. FAQPage schema exists:", html.includes("FAQPage") || html.includes("Question") || html.includes("faq"));
+    console.log("3. Main keyword included:", html.includes(mainKeyword));
+    console.log("4. Auto Ads Script exists:", html.includes("ca-pub-4969939875697438"));
+    
+    // 이미지 링크 추출 및 체크
+    const imageLinkRegex = /href="https:\/\/www\.google\.com\/search\?tbm=isch&q=[^"]*"/gi;
+    const foundImageLinks = html.match(imageLinkRegex) || [];
+    console.log("5. Image Mapping tag exists:", foundImageLinks.length > 0);
+    if (foundImageLinks.length > 0) {
+      console.log("Found Image Links:", foundImageLinks);
+    } else {
+      // 비슷한 양식 검색
+      const anyGoogleImage = html.match(/href="[^"]*google\.com[^"]*"/gi) || [];
+      console.log("Any Google Links found:", anyGoogleImage);
+    }
+    
+    console.log("6. Internal link included:", html.includes("/posts/youth-housing-dream"));
+    console.log("7. Interstitial ad button exists:", html.includes(targetLink));
+    
+    // 이미지 주석 태그 체크
+    const imageComments = html.match(/<!--\s*\[이미지\s*삽입\s*구간[^>]*-->/gi) || [];
+    console.log("8. Image comments exists:", imageComments.length > 0);
+    if (imageComments.length > 0) {
+      console.log("Found comments:", imageComments);
+    }
+    
+    // 일부 출력
+    console.log("\n=== HTML Sample ===");
+    console.log(html.substring(0, 1000) + "\n...[truncated]...\n" + html.substring(html.length - 800));
   } catch (error) {
-    console.error('Tistory AI Generation Error:', error);
-    throw error;
+    console.error("FAIL:", error);
   }
 }
 
-export async function recommendImageAndLink(keyword) {
-  if (!genAI) {
-    throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
-  }
-
-  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
-
-  const prompt = `
-당신은 구글 애드센스 및 제휴 마케팅 전문가입니다.
-사용자가 티스토리 블로그에 포스팅할 키워드(주제)를 주면, 해당 포스팅에서 수익을 극대화하기 위해 어떤 "이미지"를 삽입하고 어떤 "전면광고 유도 버튼 링크(제휴 링크 등)"를 연결하면 좋을지 3-4문장으로 짧고 명확하게 추천해주세요.
-
-사용자 키워드: "${keyword}"
-
-답변 형식 예시:
-- 추천 이미지: 지원금 지급액 표, 건강보험료 모의계산 화면 캡처 등 독자의 시선을 끄는 정보성 이미지
-- 추천 링크: 정부24 지원금 조회 페이지, 또는 쿠팡 파트너스 건강영양제 기획전 링크를 연결하여 직접적인 행동을 유도하세요.
-`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim();
-  } catch (error) {
-    console.error('Recommendation Error:', error);
-    throw error;
-  }
-}
+run();

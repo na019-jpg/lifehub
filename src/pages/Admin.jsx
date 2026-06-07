@@ -44,6 +44,26 @@ const CATEGORIES = [
   { id: 'health', name: '생활건강/영양제/운동', icon: '🌿' }
 ];
 
+const PERSONA_TEMPLATES = [
+  "30대 직장인 육아맘의 친근하고 정보력이 돋보이는 말투 (~했네요, ~더라고요)",
+  "20대 후반 재테크 전문 유튜버의 시원시원하고 직설적인 조언 톤 (~입니다, ~하세요)",
+  "40대 은행 자산관리사(PB) 출신의 신뢰감 있고 격식 있는 보고서 스타일 (~사료됩니다, ~권장합니다)",
+  "10년 차 IT 테크 블로거의 꼼꼼하고 기술적이며 위트 있는 존댓말 말투 (~이죠, ~해보세요)",
+  "은퇴 후 귀농하여 여유를 즐기는 50대 은퇴자의 따뜻하고 차분한 조언 말투 (~했답니다, ~하더군요)",
+  "맛집/여행 블로그를 5년째 운영하는 프로 인플루언서의 통통 튀고 이모티콘을 곁들인 말투 (~!!, ~네요)",
+  "대학병원 간호사 출신 헬스케어 크리에이터의 꼼꼼하고 전문적이지만 친근한 말투 (~하셔야 해요, ~입니다)",
+  "스타트업 창업자의 도전적이고 트렌디하며 인사이트를 주는 어조 (~하죠, ~전망합니다)",
+  "현직 공인중개사의 친절하고 현실적이며 리스크를 짚어주는 어조 (~추천해 드려요, ~조심하셔야 합니다)"
+];
+
+const BLOG_PURPOSES = [
+  { value: '1', name: 'ℹ️ 정보전달', desc: '객관적 사실, 인과관계 명확, 요약 강조' },
+  { value: '2', name: '⭐ 후기/리뷰', desc: '주관적 만족도, 장단점 균형, 실제 사용감 묘사' },
+  { value: '3', name: '📊 비교/추천', desc: '대조 표(Table) 활용, 타겟별 추천 분기' },
+  { value: '4', name: '💡 노하우/꿀팁', desc: '단계별 가이드(Step), 주의사항, 실전 팁' },
+  { value: '5', name: '🛠️ 문제해결', desc: '증상/문제 원인 분석 -> 명확한 해결책 제시' }
+];
+
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -55,6 +75,14 @@ export default function Admin() {
   const [tistoryAiResult, setTistoryAiResult] = useState(null);
   const [recommendLoading, setRecommendLoading] = useState(false);
   const [recommendationResult, setRecommendationResult] = useState(null);
+
+  // 새롭게 추가된 고급 SEO 설정 상태들
+  const [subKeywords, setSubKeywords] = useState('');
+  const [relatedKeywords, setRelatedKeywords] = useState('');
+  const [blogPurpose, setBlogPurpose] = useState('1');
+  const [randomPersona, setRandomPersona] = useState('');
+  const [internalLinks, setInternalLinks] = useState([{ title: '', url: '' }]);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const [trendingKeywords, setTrendingKeywords] = useState([]);
   const [trendsLoading, setTrendsLoading] = useState(false);
@@ -88,7 +116,8 @@ export default function Admin() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === '0000') setIsAuthenticated(true);
+    const securePassword = import.meta.env.VITE_ADMIN_PASSWORD || '0000';
+    if (password === securePassword) setIsAuthenticated(true);
     else alert('비밀번호가 일치하지 않습니다.');
   };
 
@@ -111,13 +140,22 @@ export default function Admin() {
 
   const handleGenerateTistoryAi = async () => {
     if (!tistoryKeyword.trim()) {
-      alert('키워드를 입력해주세요.');
+      alert('메인 키워드를 입력해주세요.');
       return;
     }
     setTistoryAiLoading(true);
     setTistoryAiResult(null);
     try {
-      const result = await generateTistoryPost(tistoryKeyword, targetLink || '/m');
+      const filteredInternalLinks = internalLinks.filter(link => link.title.trim() && link.url.trim());
+      const result = await generateTistoryPost({
+        mainKeyword: tistoryKeyword,
+        subKeywords,
+        relatedKeywords,
+        blogPurpose,
+        randomPersona,
+        internalLinks: filteredInternalLinks,
+        targetLink: targetLink || '/m'
+      });
       setTistoryAiResult(result);
     } catch (err) {
       alert("AI 생성 실패: " + err.message);
@@ -129,13 +167,35 @@ export default function Admin() {
   const handleCopyTistoryAiHtml = () => {
     if (!tistoryAiResult) return;
     navigator.clipboard.writeText(tistoryAiResult.htmlContent).then(() => {
-      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!\\n티스토리 기본모드를 HTML로 변경하고 붙여넣기 하세요.");
+      alert("✅ 티스토리용 최적화 HTML이 복사되었습니다!\n티스토리 기본모드를 HTML로 변경하고 붙여넣기 하세요.");
     }).catch(err => alert("복사 실패: " + err));
   };
 
   const handleTrendClick = (keyword) => {
     setTistoryKeyword(keyword);
+    setSubKeywords('');
+    setRelatedKeywords('');
     setTistoryAiResult(null);
+  };
+
+  const handleRandomizePersona = () => {
+    const randomIndex = Math.floor(Math.random() * PERSONA_TEMPLATES.length);
+    setRandomPersona(PERSONA_TEMPLATES[randomIndex]);
+  };
+
+  const handleAddInternalLink = () => {
+    setInternalLinks([...internalLinks, { title: '', url: '' }]);
+  };
+
+  const handleRemoveInternalLink = (index) => {
+    const newLinks = internalLinks.filter((_, i) => i !== index);
+    setInternalLinks(newLinks.length > 0 ? newLinks : [{ title: '', url: '' }]);
+  };
+
+  const handleInternalLinkChange = (index, field, value) => {
+    const newLinks = [...internalLinks];
+    newLinks[index][field] = value;
+    setInternalLinks(newLinks);
   };
 
   if (!isAuthenticated) {
@@ -225,58 +285,272 @@ export default function Admin() {
           <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 opacity-50"></div>
             
-            <h2 className="text-2xl font-black text-slate-800 mb-6">📝 AI 포스팅 생성</h2>
+            <h2 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2">
+              <span>📝</span> AI 포스팅 생성
+            </h2>
             
-            <div className="flex flex-col gap-3 mb-2">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input 
-                  type="text" 
-                  value={tistoryKeyword}
-                  onChange={(e) => setTistoryKeyword(e.target.value)}
-                  placeholder="키워드를 입력하거나 좌측 트렌드를 클릭하세요."
-                  className="flex-1 w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-lg"
-                  onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
-                />
-                <button
-                  onClick={handleGetRecommendation}
-                  disabled={recommendLoading}
-                  className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold px-6 py-4 rounded-2xl transition disabled:bg-slate-100 disabled:text-slate-400 shrink-0 flex items-center justify-center gap-2"
-                >
-                  {recommendLoading ? '분석 중...' : '💡 링크/이미지 추천'}
-                </button>
-              </div>
-              
-              {recommendationResult && (
-                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl animate-fade-in text-sm text-indigo-900 whitespace-pre-wrap leading-relaxed shadow-sm mt-2">
-                  <strong className="flex items-center gap-1 text-indigo-700 mb-2"><span className="text-base">💡</span> AI 전략 추천</strong>
-                  {recommendationResult}
+            <div className="space-y-6">
+              {/* 기본 설정 섹션 */}
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+                <h3 className="text-sm font-bold text-slate-700 flex items-center gap-1.5 mb-2">
+                  <span className="w-1.5 h-3 bg-blue-600 rounded-full"></span> 기본 설정
+                </h3>
+                <div className="flex flex-col md:flex-row gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">메인 키워드 (필수)</label>
+                    <input 
+                      type="text" 
+                      value={tistoryKeyword}
+                      onChange={(e) => setTistoryKeyword(e.target.value)}
+                      placeholder="예: 청년도약계좌 조건"
+                      className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-bold text-base shadow-sm"
+                      onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
+                    />
+                  </div>
+                  <div className="md:self-end">
+                    <button
+                      onClick={handleGetRecommendation}
+                      disabled={recommendLoading}
+                      className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-5 py-4 rounded-xl transition disabled:bg-slate-100 disabled:text-slate-400 flex items-center justify-center gap-2 text-sm shadow-sm border border-indigo-100"
+                    >
+                      {recommendLoading ? '분석 중...' : '💡 링크/이미지 추천'}
+                    </button>
+                  </div>
                 </div>
-              )}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input 
-                  type="text" 
-                  value={targetLink}
-                  onChange={(e) => setTargetLink(e.target.value)}
-                  placeholder="전면광고 유도 버튼 링크 (비워두면 기본값 '/m' 적용)"
-                  className="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-medium text-base text-blue-600"
-                  onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
-                />
+
+                {recommendationResult && (
+                  <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl animate-fade-in text-xs text-indigo-900 whitespace-pre-wrap leading-relaxed shadow-sm">
+                    <strong className="flex items-center gap-1 text-indigo-700 mb-1.5"><span className="text-sm">💡</span> AI 전략 추천</strong>
+                    {recommendationResult}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1.5">전면광고 유도 버튼 링크</label>
+                  <input 
+                    type="text" 
+                    value={targetLink}
+                    onChange={(e) => setTargetLink(e.target.value)}
+                    placeholder="비워두면 기본값 '/m' 적용 (예: 특정 랜딩페이지 URL)"
+                    className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-medium text-sm text-blue-600 shadow-sm"
+                    onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
+                  />
+                </div>
+              </div>
+
+              {/* 고급 SEO 설정 (아코디언) */}
+              <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                  className="w-full px-6 py-4 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center justify-between font-bold text-slate-700 text-sm"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>⚙️</span> 구글 SEO 우회 및 포스팅 정밀 설정 {showAdvancedSettings ? '(접기)' : '(펼치기)'}
+                  </span>
+                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 font-extrabold">
+                    {showAdvancedSettings ? '▲ Close' : '▼ Expand'}
+                  </span>
+                </button>
+
+                {showAdvancedSettings && (
+                  <div className="p-6 bg-white border-t border-slate-100 space-y-6 animate-fade-in">
+                    {/* 서브 및 연관 키워드 입력 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1.5">서브 키워드 (5개, 쉼표 구분)</label>
+                        <input 
+                          type="text" 
+                          value={subKeywords}
+                          onChange={(e) => setSubKeywords(e.target.value)}
+                          placeholder="예: 신청방법, 가입 조건, 금리 비교, 혜택, 구비서류"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition text-sm font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1.5">연관 키워드 (5개, 쉼표 구분)</label>
+                        <input 
+                          type="text" 
+                          value={relatedKeywords}
+                          onChange={(e) => setRelatedKeywords(e.target.value)}
+                          placeholder="예: 청년통장, 적금 추천, 비과세 혜택, 모바일 신청, 하나은행"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition text-sm font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 글의 목적 선택 */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-2">글의 목적 (논리 구조 동기화)</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                        {BLOG_PURPOSES.map((purpose) => (
+                          <button
+                            key={purpose.value}
+                            type="button"
+                            onClick={() => setBlogPurpose(purpose.value)}
+                            className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between h-24
+                              ${blogPurpose === purpose.value 
+                                ? 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-100 shadow-sm' 
+                                : 'bg-slate-50 hover:bg-slate-100 border-slate-200'}`}
+                          >
+                            <span className="font-extrabold text-sm text-slate-800">{purpose.name}</span>
+                            <span className="text-[10px] text-slate-500 leading-tight mt-1">{purpose.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 랜덤 페르소나 설정 */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500">랜덤 페르소나 (AI 탐지 우회 말투)</label>
+                        <button
+                          type="button"
+                          onClick={handleRandomizePersona}
+                          className="text-xs font-extrabold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 shadow-sm"
+                        >
+                          <span>🎲</span> 랜덤 페르소나 부여
+                        </button>
+                      </div>
+                      <textarea 
+                        value={randomPersona}
+                        onChange={(e) => setRandomPersona(e.target.value)}
+                        placeholder="부여할 어조나 말투를 입력하거나, 우측 🎲 버튼을 클릭하여 랜덤 템플릿을 적용해 보세요."
+                        className="w-full h-20 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-blue-500 transition text-sm font-medium resize-none"
+                      />
+                    </div>
+
+                    {/* 내부 링크 목록 */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-slate-500">기존 포스팅 내부 링크 연결</label>
+                        <button
+                          type="button"
+                          onClick={handleAddInternalLink}
+                          className="text-xs font-extrabold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 shadow-sm"
+                        >
+                          <span>➕</span> 링크 추가
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {internalLinks.map((link, idx) => (
+                          <div key={idx} className="flex gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input 
+                              type="text" 
+                              value={link.title}
+                              onChange={(e) => handleInternalLinkChange(idx, 'title', e.target.value)}
+                              placeholder="포스팅 제목"
+                              className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none"
+                            />
+                            <input 
+                              type="text" 
+                              value={link.url}
+                              onChange={(e) => handleInternalLinkChange(idx, 'url', e.target.value)}
+                              placeholder="포스팅 URL"
+                              className="flex-[2] px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none text-blue-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveInternalLink(idx)}
+                              className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg border border-red-100 transition"
+                            >
+                              ❌
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 포스팅 시작 전 설정 프리뷰 (글쓰기 전에 메인/서브 키워드 확인용) */}
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                  <span className="text-xs font-extrabold text-slate-500 flex items-center gap-1">
+                    <span>📢</span> 포스팅 생성 설정 프리뷰
+                  </span>
+                  <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-black tracking-wider uppercase">
+                    Ready to Write
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-inner">
+                    <span className="text-[10px] font-bold text-slate-400 block mb-0.5">🎯 메인 키워드</span>
+                    <span className="font-black text-slate-700 text-sm">{tistoryKeyword || '(메인 키워드를 입력해주세요)'}</span>
+                  </div>
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-inner">
+                    <span className="text-[10px] font-bold text-slate-400 block mb-0.5">🏷️ 서브 키워드</span>
+                    {subKeywords.trim() ? (
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {subKeywords.split(',').map((kw, idx) => (
+                          <span key={idx} className="bg-slate-50 text-slate-600 text-[10px] font-extrabold px-2 py-0.5 rounded border border-slate-100">
+                            {kw.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 text-xs font-medium block mt-0.5">(등록된 서브 키워드 없음)</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 실행 버튼 */}
+              <div className="pt-2">
                 <button 
                   onClick={handleGenerateTistoryAi}
                   disabled={tistoryAiLoading}
-                  className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 py-4 rounded-2xl shadow-lg transition disabled:bg-slate-300 shrink-0 text-lg flex items-center justify-center gap-2"
+                  className="w-full bg-slate-900 hover:bg-black text-white font-black px-8 py-5 rounded-2xl shadow-xl transition-all hover:shadow-2xl disabled:bg-slate-300 text-lg flex items-center justify-center gap-3 active:scale-[0.99]"
                 >
-                  {tistoryAiLoading ? '작성 중...' : '✨ 글쓰기'}
+                  {tistoryAiLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-[3px] border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>수익 극대화형 포스팅 제조 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span>
+                      <span>수익 극대화형 완벽 최적화 포스팅 생성</span>
+                    </>
+                  )}
                 </button>
+                <p className="text-center text-xs text-slate-400 mt-3 font-semibold">
+                  구글 AEO(대화형 검색) 스니펫 및 애드센스 전면광고 자동 배치 완료
+                </p>
               </div>
             </div>
             <p className="text-sm text-slate-500 mb-8 ml-2">포스팅 생성에는 약 30초~1분 정도 소요될 수 있습니다.</p>
 
             {tistoryAiLoading && (
-              <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 rounded-2xl border border-slate-100 animate-pulse">
-                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">AI가 고단가 최적화 포스팅을 작성하고 있습니다...</h3>
-                <p className="text-slate-500 font-medium text-sm">AEO 봇이 좋아하는 문맥과 구조로 구성하는 중입니다.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center bg-gradient-to-br from-slate-50 to-blue-50/20 rounded-2xl border border-slate-100 shadow-inner">
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-6"></div>
+                <h3 className="text-xl font-black text-slate-800 mb-2">✨ AI 포스팅 자동 작성 중</h3>
+                <p className="text-slate-500 font-medium text-sm mb-6">구글 SEO 최적화 및 AEO 검색 노출을 위한 최적의 구조로 글을 구성하고 있습니다.</p>
+                
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm max-w-md w-full text-left space-y-2.5">
+                  <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider pb-1 border-b">
+                    <span>Targeting Info</span>
+                    <span className="text-blue-600 animate-pulse">● Generation in progress</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-400 block mb-0.5">🎯 메인 키워드</span>
+                    <span className="font-extrabold text-slate-800 text-base">{tistoryKeyword}</span>
+                  </div>
+                  {subKeywords.trim() && (
+                    <div>
+                      <span className="text-xs font-bold text-slate-400 block mb-0.5">🏷️ 서브 키워드</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {subKeywords.split(',').map((kw, idx) => (
+                          <span key={idx} className="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-md border border-slate-200">
+                            {kw.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -297,6 +571,33 @@ export default function Admin() {
                     <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-100 rounded-full opacity-50"></div>
                     <h4 className="font-black text-amber-800 mb-2 flex items-center gap-1.5 text-sm relative z-10"><span>💰</span> 광고 배치</h4>
                     <p className="text-xs text-amber-900 leading-relaxed font-medium relative z-10">{tistoryAiResult.adPlacementGuide}</p>
+                  </div>
+                </div>
+
+                {/* 메인 및 서브 키워드 확인 카드 */}
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <h4 className="font-black text-slate-800 flex items-center gap-2 text-sm">
+                    <span>🎯</span> 타겟팅 적용 키워드
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
+                      <span className="text-[10px] font-bold text-slate-400 block mb-1">메인 키워드</span>
+                      <span className="font-black text-slate-800 text-base">{tistoryKeyword}</span>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
+                      <span className="text-[10px] font-bold text-slate-400 block mb-1">서브 키워드</span>
+                      {subKeywords.trim() ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {subKeywords.split(',').map((kw, idx) => (
+                            <span key={idx} className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-md border border-slate-200">
+                              {kw.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 text-xs font-medium">(지정된 서브 키워드 없음)</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
