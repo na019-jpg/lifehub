@@ -81,7 +81,6 @@ export default function Admin() {
   const [relatedKeywords, setRelatedKeywords] = useState('');
   const [blogPurpose, setBlogPurpose] = useState('1');
   const [randomPersona, setRandomPersona] = useState('');
-  const [internalLinks, setInternalLinks] = useState([{ title: '', url: '' }]);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const [trendingKeywords, setTrendingKeywords] = useState([]);
@@ -146,14 +145,12 @@ export default function Admin() {
     setTistoryAiLoading(true);
     setTistoryAiResult(null);
     try {
-      const filteredInternalLinks = internalLinks.filter(link => link.title.trim() && link.url.trim());
       const result = await generateTistoryPost({
         mainKeyword: tistoryKeyword,
         subKeywords,
         relatedKeywords,
         blogPurpose,
         randomPersona,
-        internalLinks: filteredInternalLinks,
         targetLink: targetLink || '/m'
       });
       setTistoryAiResult(result);
@@ -181,21 +178,6 @@ export default function Admin() {
   const handleRandomizePersona = () => {
     const randomIndex = Math.floor(Math.random() * PERSONA_TEMPLATES.length);
     setRandomPersona(PERSONA_TEMPLATES[randomIndex]);
-  };
-
-  const handleAddInternalLink = () => {
-    setInternalLinks([...internalLinks, { title: '', url: '' }]);
-  };
-
-  const handleRemoveInternalLink = (index) => {
-    const newLinks = internalLinks.filter((_, i) => i !== index);
-    setInternalLinks(newLinks.length > 0 ? newLinks : [{ title: '', url: '' }]);
-  };
-
-  const handleInternalLinkChange = (index, field, value) => {
-    const newLinks = [...internalLinks];
-    newLinks[index][field] = value;
-    setInternalLinks(newLinks);
   };
 
   if (!isAuthenticated) {
@@ -420,47 +402,7 @@ export default function Admin() {
                       />
                     </div>
 
-                    {/* 내부 링크 목록 */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="block text-xs font-bold text-slate-500">기존 포스팅 내부 링크 연결</label>
-                        <button
-                          type="button"
-                          onClick={handleAddInternalLink}
-                          className="text-xs font-extrabold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 shadow-sm"
-                        >
-                          <span>➕</span> 링크 추가
-                        </button>
-                      </div>
-                      
-                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {internalLinks.map((link, idx) => (
-                          <div key={idx} className="flex gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                            <input 
-                              type="text" 
-                              value={link.title}
-                              onChange={(e) => handleInternalLinkChange(idx, 'title', e.target.value)}
-                              placeholder="포스팅 제목"
-                              className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none"
-                            />
-                            <input 
-                              type="text" 
-                              value={link.url}
-                              onChange={(e) => handleInternalLinkChange(idx, 'url', e.target.value)}
-                              placeholder="포스팅 URL"
-                              className="flex-[2] px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs outline-none text-blue-600"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveInternalLink(idx)}
-                              className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg border border-red-100 transition"
-                            >
-                              ❌
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+
                   </div>
                 )}
               </div>

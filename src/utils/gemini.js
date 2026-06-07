@@ -47,7 +47,9 @@ export async function generateTistoryPost({
 
 ### Step 2. 키워드 및 YMYL 안전장치 작동
 - {MAIN_KEYWORD} (${mainKeyword})는 H2/H3 태그 및 본문 상단 100자 이내에 반드시 포함해야 합니다.
-- {SUB_KEYWORDS} (${subKeywords})와 {RELATED_KEYWORDS} (${relatedKeywords})는 본문 흐름에 방해되지 않게 문맥적으로 자연스럽게 분산 배치하십시오.
+- 만약 주입된 {SUB_KEYWORDS} (${subKeywords})와 {RELATED_KEYWORDS} (${relatedKeywords})가 비어있거나 부족할 경우, 입력된 {MAIN_KEYWORD} (${mainKeyword})를 분석하여 구글 AdSense 광고 단가가 높고 유입량이 많은 최적의 서브 키워드 5개와 연관 키워드 5개를 스스로 자동으로 산정하여 설정하십시오.
+- 자동으로 설정되거나 전달받은 서브 키워드 5개와 연관 키워드 5개는 본문 흐름에 방해되지 않게 문맥적으로 자연스럽게 분산 배치하여 본문을 작성하십시오.
+- 그리고 반환할 JSON의 'keywordAnalysis' 필드 첫 부분에 "이번 포스팅에 자동으로 적용된 서브 키워드: [선정된 5개], 연관 키워드: [선정된 5개]"를 명확하게 포함해 주십시오. (이를 통해 사용자가 어떤 키워드가 자동 타겟팅되었는지 결과 분석에서 따로 바로 확인할 수 있어야 합니다.)
 - 금융/건강 등 고단가 카테고리일 경우, 절대 의학적/법적 확언을 피하고 "일반적인 정보 공유 차원이며, 전문가 상담이 필요할 수 있습니다"라는 면책 문구를 정교하게 흐릿하고 자연스러운 톤으로 본문 하단에 녹여 쓰십시오.
 
 ### Step 3. 구조적 SEO 및 스키마 삽입
