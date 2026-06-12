@@ -217,3 +217,45 @@ export async function recommendImageAndLink(keyword) {
     throw error;
   }
 }
+
+export async function generateHighCtrTitles(mainKeyword, subKeywords = '') {
+  if (!genAI) {
+    throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
+  }
+
+  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+
+  const prompt = `
+당신은 구글 애드센스 블로그 마케팅 전문가이자 고수익 블로거입니다.
+제시된 메인 키워드와 서브 키워드들을 조합하여 구글 검색 노출 및 높은 클릭률(CTR)을 달성할 수 있는 최적화된 블로그 포스팅 제목 5개를 생성하십시오.
+
+[필수 규칙]
+1. 메인 키워드는 반드시 제목의 맨 앞(첫머리)에 와야 합니다.
+2. 서브 키워드들은 제목 중간에 자연스럽게 녹아들어가야 합니다.
+3. 제목의 끝부분에는 독자의 클릭을 유도하는 후킹 문구(예: ~ 신청방법 및 꿀팁, ~ 홈페이지 환급노하우, ~ 20% 할인카드 추천 등)가 포함되어야 합니다.
+4. 제목은 각각 20자~40자 내외로 너무 길지 않고 매끄러워야 합니다.
+
+메인 키워드: "${mainKeyword}"
+서브 키워드: "${subKeywords}"
+
+출력 형식:
+다른 설명 없이 오직 한국어 제목 5개만 아래의 JSON array 형식으로 정확히 반환하십시오.
+[
+  "제목1",
+  "제목2",
+  "제목3",
+  "제목4",
+  "제목5"
+]
+`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Title Generation Error:', error);
+    throw error;
+  }
+}

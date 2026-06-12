@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SeoHelmet from '../components/SeoHelmet';
-import { generateTistoryPost, recommendImageAndLink } from '../utils/gemini';
+import { generateTistoryPost, recommendImageAndLink, generateHighCtrTitles } from '../utils/gemini';
 
 // --- Mock Data for Trends ---
 const TREND_DATA = {
@@ -64,6 +64,93 @@ const BLOG_PURPOSES = [
   { value: '5', name: '🛠️ 문제해결', desc: '증상/문제 원인 분석 -> 명확한 해결책 제시' }
 ];
 
+const SOURCING_PORTALS = [
+  {
+    category: "gov",
+    name: "복지로 (Bokjiro)",
+    desc: "정부 지원 혜택 모의계산 및 복지 서비스 통합 신청 포털",
+    url: "https://www.bokjiro.go.kr",
+    icon: "🏛️"
+  },
+  {
+    category: "gov",
+    name: "정부24 (Gov24)",
+    desc: "주민등록등본 등 민원서류 발급 및 국가 혜택 맞춤 안내",
+    url: "https://www.gov.kr/portal/main",
+    icon: "🛡️"
+  },
+  {
+    category: "gov",
+    name: "온라인 청년센터 (Youth Center)",
+    desc: "청년 구직활동, 주거 지원 등 만 19~34세 대상 정책 총망라",
+    url: "https://www.youthcenter.go.kr/main.do",
+    icon: "⚡"
+  },
+  {
+    category: "gov",
+    name: "국민취업지원제도",
+    desc: "구직촉진수당(월 50만원) 및 맞춤형 취업지원 서비스 제공",
+    url: "https://www.kua.go.kr/uaptm010/selectMain.do",
+    icon: "💼"
+  },
+  {
+    category: "gov",
+    name: "고용노동부",
+    desc: "근로시간 단축, 고용보험, 실업급여 등 노동정책 공식 사이트",
+    url: "http://www.moel.go.kr",
+    icon: "⚖️"
+  },
+  {
+    category: "gov",
+    name: "주택도시기금",
+    desc: "디딤돌 대출, 버팀목 전세자금대출 등 청년/주민 주거자금 지원",
+    url: "https://nhuf.molit.go.kr",
+    icon: "🏠"
+  },
+  {
+    category: "gov",
+    name: "국민행복카드",
+    desc: "정부 제공 바우처(임신, 출산, 육아 등) 통합 국가 바우처 카드",
+    url: "http://www.voucher.go.kr/common/main.do",
+    icon: "💳"
+  },
+  {
+    category: "gov",
+    name: "보건복지부",
+    desc: "기초연금, 건강보험, 아동수당 등 보건복지 정책 정보 수록",
+    url: "http://www.mohw.go.kr/react/index.jsp",
+    icon: "🌿"
+  },
+  {
+    category: "finance",
+    name: "카카오뱅크 '돈이 되는 이야기'",
+    desc: "실생활에 유용한 금융 상식 및 고수익 칼럼 벤치마킹 피드",
+    url: "https://www.kakaobank.com/bank-story/454",
+    icon: "🟡"
+  },
+  {
+    category: "finance",
+    name: "뱅크샐러드 '머니피드'",
+    desc: "청년 지원정책, 소비 습관 개선 및 카드포인트 현금화 꿀팁",
+    url: "https://www.banksalad.com/articles/home",
+    icon: "🟢"
+  },
+  {
+    category: "finance",
+    name: "열고닫기 (opcl.kr)",
+    desc: "2030 맞춤형 정부 혜택 및 지원 사업 요약 큐레이션 사이트",
+    url: "https://opcl.kr/",
+    icon: "📂"
+  },
+  {
+    category: "gov",
+    name: "대한민국 정책 브리핑",
+    desc: "범정부 정책 발표 보도자료 및 실시간 국가 이슈 아카이브",
+    url: "https://www.korea.kr/main.do",
+    icon: "📢"
+  }
+];
+
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -76,6 +163,52 @@ export default function Admin() {
   const [recommendLoading, setRecommendLoading] = useState(false);
   const [recommendationResult, setRecommendationResult] = useState(null);
   const [postType, setPostType] = useState('revenue'); // 'approval' or 'revenue'
+  const [leftTab, setLeftTab] = useState('trends'); // 'trends' or 'sourcing'
+  const [combinerMainKeyword, setCombinerMainKeyword] = useState('');
+  const [combinerSubKeywords, setCombinerSubKeywords] = useState('');
+  const [combinerLoading, setCombinerLoading] = useState(false);
+  const [combinerTitles, setCombinerTitles] = useState([]);
+
+  const handleGenerateLocalTitles = () => {
+    if (!combinerMainKeyword.trim()) {
+      alert('메인 키워드를 먼저 입력해주세요.');
+      return;
+    }
+    const subs = combinerSubKeywords
+      ? combinerSubKeywords.split(',').map(s => s.trim()).filter(s => s)
+      : [];
+    const subsStr = subs.join(' ');
+    
+    const titles = [
+      `${combinerMainKeyword} ${subsStr} 신청방법 및 필수 꿀팁!`,
+      `${combinerMainKeyword} ${subsStr} 홈페이지 환급노하우 총정리`,
+      `${combinerMainKeyword} ${subsStr} 대상 조건 및 구비서류 안내`,
+      `${combinerMainKeyword} ${subsStr} 최대 혜택 받고 1분만에 신청하는 법`,
+      `[2026년 최신] ${combinerMainKeyword} ${subsStr} 핵심 정보 분석`
+    ];
+    setCombinerTitles(titles);
+  };
+
+  const handleGenerateAiTitles = async () => {
+    if (!combinerMainKeyword.trim()) {
+      alert('메인 키워드를 먼저 입력해주세요.');
+      return;
+    }
+    setCombinerLoading(true);
+    try {
+      const titles = await generateHighCtrTitles(combinerMainKeyword, combinerSubKeywords);
+      setCombinerTitles(titles);
+    } catch (err) {
+      alert('AI 제목 생성 실패: ' + err.message);
+    } finally {
+      setCombinerLoading(false);
+    }
+  };
+
+  const handleApplyTitle = (title) => {
+    setTistoryKeyword(title);
+    alert(`🎯 포스팅 제목/키워드로 설정되었습니다:\n"${title}"`);
+  };
 
   // 새롭게 추가된 고급 SEO 설정 상태들
   const [blogPurpose, setBlogPurpose] = useState('1');
@@ -228,43 +361,127 @@ export default function Admin() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Column: Trends & Input */}
+        {/* Left Column: Trends & Sourcing Hub */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-3xl border border-indigo-100">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-black text-indigo-900 flex items-center gap-2">
-                <span>🔥</span> 오늘의 트렌드 TOP 10
-              </h2>
-              <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">매일 10시 갱신</span>
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+            {/* 탭 헤더 */}
+            <div className="flex gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setLeftTab('trends')}
+                className={`flex-1 py-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5
+                  ${leftTab === 'trends'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                  }`}
+              >
+                <span>🔥</span> 실시간 트렌드
+              </button>
+              <button
+                type="button"
+                onClick={() => setLeftTab('sourcing')}
+                className={`flex-1 py-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5
+                  ${leftTab === 'sourcing'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                  }`}
+              >
+                <span>🏛️</span> 고단가 소싱 포털
+              </button>
             </div>
-            <p className="text-xs text-indigo-600 mb-4 font-medium leading-relaxed">
-              현재 선택된 <strong className="font-bold">[{CATEGORIES.find(c => c.id === activeCategory)?.name}]</strong> 카테고리의 실제 네이버 급상승 키워드입니다. (최근 14일 기준)
-            </p>
-            
-            <div className="flex flex-col gap-2 min-h-[400px]">
-              {trendsLoading ? (
-                <div className="flex flex-col items-center justify-center h-full py-10 opacity-60">
-                  <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-                  <p className="text-xs font-bold text-indigo-700">네이버 검색량 분석 중...</p>
+
+            {leftTab === 'trends' ? (
+              <div className="animate-fade-in space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-black text-slate-800 flex items-center gap-1.5">
+                    <span>🔥</span> 오늘의 트렌드 TOP 10
+                  </h2>
+                  <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">10시 갱신</span>
                 </div>
-              ) : (
-                trendingKeywords.map((keyword, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleTrendClick(keyword)}
-                    className="flex items-center text-left bg-white px-4 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 border border-transparent transition-all group animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3 
-                      ${index < 3 ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>
-                      {index + 1}
-                    </span>
-                    <span className="font-bold text-slate-700 group-hover:text-indigo-700 transition-colors flex-1">{keyword}</span>
-                    {index < 3 && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter">HOT</span>}
-                  </button>
-                ))
-              )}
-            </div>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  현재 선택된 <strong className="font-bold text-slate-700">[{CATEGORIES.find(c => c.id === activeCategory)?.name}]</strong> 카테고리의 실제 네이버 급상승 키워드입니다.
+                </p>
+                
+                <div className="flex flex-col gap-2 min-h-[400px]">
+                  {trendsLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full py-20 opacity-60">
+                      <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                      <p className="text-xs font-bold text-indigo-700">네이버 검색량 분석 중...</p>
+                    </div>
+                  ) : (
+                    trendingKeywords.map((keyword, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleTrendClick(keyword)}
+                        className="flex items-center text-left bg-white px-4 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 border border-slate-100 transition-all group animate-fade-in"
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mr-3 
+                          ${index < 3 ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>
+                          {index + 1}
+                        </span>
+                        <span className="font-bold text-slate-700 group-hover:text-indigo-700 transition-colors flex-1 text-sm">{keyword}</span>
+                        {index < 3 && <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter">HOT</span>}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="animate-fade-in space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-black text-slate-800 flex items-center gap-1.5">
+                    <span>🏛️</span> 고단가 소싱 포털 목록
+                  </h2>
+                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">고수익 금융/경제</span>
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  애드센스 고단가 분야의 정책 이슈 및 금융 정보 큐레이션을 제공하는 사이트 목록입니다. 매일 방문하여 포스팅 주제를 발굴하세요.
+                </p>
+                
+                <div className="flex flex-col gap-2 max-h-[500px] overflow-y-auto pr-1">
+                  <div className="text-[10px] font-bold text-slate-400 border-b pb-1">🏛️ 정부 공식 포털</div>
+                  {SOURCING_PORTALS.filter(p => p.category === 'gov').map((portal, index) => (
+                    <a
+                      key={index}
+                      href={portal.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start text-left bg-white p-3 rounded-xl shadow-sm hover:shadow-md hover:border-emerald-300 border border-slate-100 transition-all group"
+                    >
+                      <span className="text-lg mr-2.5 mt-0.5">{portal.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors text-xs flex items-center gap-1">
+                          {portal.name}
+                          <span className="text-[9px] text-slate-400 group-hover:text-emerald-500">↗</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed truncate">{portal.desc}</p>
+                      </div>
+                    </a>
+                  ))}
+                  
+                  <div className="text-[10px] font-bold text-slate-400 border-b pb-1 mt-3">📈 금융 & 벤치마킹 피드</div>
+                  {SOURCING_PORTALS.filter(p => p.category === 'finance').map((portal, index) => (
+                    <a
+                      key={index}
+                      href={portal.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start text-left bg-white p-3 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 border border-slate-100 transition-all group"
+                    >
+                      <span className="text-lg mr-2.5 mt-0.5">{portal.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors text-xs flex items-center gap-1">
+                          {portal.name}
+                          <span className="text-[9px] text-slate-400 group-hover:text-blue-500">↗</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed truncate">{portal.desc}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -326,6 +543,89 @@ export default function Admin() {
                     소제목(H2, H3) 아래 <strong>수동광고 코드가 자동으로 배치</strong>되며, <strong>새창 열기가 제한된 전면광고 유도 버튼</strong>과 
                     상위 노출에 유리한 다수 이미지(3장 나열), 첨부파일 다운로드 디자인 박스를 생성합니다.
                   </p>
+                </div>
+              )}
+            </div>
+
+            {/* 신규 피처: 키워드 조합 & 제목 제조기 */}
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
+                  <span>💡</span> PDF 맞춤형 키워드 조합 & 제목 제조기
+                </h3>
+                <span className="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-md">
+                  고수익 CTR 제목 법칙 적용
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1.5">1. 메인 키워드 (맨 앞에 배치됨)</label>
+                  <input
+                    type="text"
+                    value={combinerMainKeyword}
+                    onChange={(e) => setCombinerMainKeyword(e.target.value)}
+                    placeholder="예: 알뜰교통카드"
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-sm font-bold shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1.5">2. 서브 키워드 (중간에 배치됨, 쉼표 구분)</label>
+                  <input
+                    type="text"
+                    value={combinerSubKeywords}
+                    onChange={(e) => setCombinerSubKeywords(e.target.value)}
+                    placeholder="예: 신청, 사용법, 플러스"
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-sm font-medium shadow-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleGenerateLocalTitles}
+                  className="flex-1 bg-white hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl border border-slate-200 transition text-xs shadow-sm flex items-center justify-center gap-1.5"
+                >
+                  <span>⚡</span> 로컬 즉시 조합
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGenerateAiTitles}
+                  disabled={combinerLoading}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition text-xs shadow-sm flex items-center justify-center gap-1.5 disabled:bg-slate-300"
+                >
+                  {combinerLoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>AI 분석 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🤖</span> AI 고수익 제목 추천
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {combinerTitles.length > 0 && (
+                <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2.5 animate-fade-in">
+                  <span className="text-[10px] font-bold text-slate-400 block mb-1">🎯 생성된 고CTR 제목 (클릭 시 키워드로 바로 적용)</span>
+                  <div className="flex flex-col gap-2">
+                    {combinerTitles.map((title, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleApplyTitle(title)}
+                        className="text-left w-full px-4 py-3 rounded-lg bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 border border-slate-100 transition-all font-bold text-xs flex items-center justify-between group"
+                      >
+                        <span className="truncate flex-1">{idx + 1}. {title}</span>
+                        <span className="text-[10px] bg-slate-200 text-slate-500 group-hover:bg-indigo-200 group-hover:text-indigo-700 px-2 py-0.5 rounded font-black transition ml-2 shrink-0">
+                          적용 👆
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
