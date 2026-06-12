@@ -75,6 +75,7 @@ export default function Admin() {
   const [tistoryAiResult, setTistoryAiResult] = useState(null);
   const [recommendLoading, setRecommendLoading] = useState(false);
   const [recommendationResult, setRecommendationResult] = useState(null);
+  const [postType, setPostType] = useState('revenue'); // 'approval' or 'revenue'
 
   // 새롭게 추가된 고급 SEO 설정 상태들
   const [blogPurpose, setBlogPurpose] = useState('1');
@@ -147,7 +148,8 @@ export default function Admin() {
         mainKeyword: tistoryKeyword,
         blogPurpose,
         randomPersona,
-        targetLink: targetLink || '/m'
+        targetLink: targetLink || '/m',
+        postType
       });
       setTistoryAiResult(result);
     } catch (err) {
@@ -269,17 +271,70 @@ export default function Admin() {
         {/* Right Column: AI Generator & Results */}
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 opacity-50"></div>
+            <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-full -z-10 opacity-50 transition-all duration-300 ${postType === 'approval' ? 'bg-emerald-50' : 'bg-blue-50'}`}></div>
             
             <h2 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2">
               <span>📝</span> AI 포스팅 생성
             </h2>
+
+            {/* 승인글 / 수익글 프리미엄 탭 선택 */}
+            <div className="flex gap-2.5 mb-6 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => { setPostType('approval'); setTistoryAiResult(null); }}
+                className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-sm transition-all duration-200 flex items-center justify-center gap-2
+                  ${postType === 'approval'
+                    ? 'bg-emerald-600 text-white shadow-md'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200'
+                  }`}
+              >
+                <span>🌿</span> 애드센스 승인용 글 쓰기
+              </button>
+              <button
+                type="button"
+                onClick={() => { setPostType('revenue'); setTistoryAiResult(null); }}
+                className={`flex-1 py-3 px-4 rounded-xl font-extrabold text-sm transition-all duration-200 flex items-center justify-center gap-2
+                  ${postType === 'revenue'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200'
+                  }`}
+              >
+                <span>💰</span> 수익 극대화형 글 쓰기
+              </button>
+            </div>
+
+            {/* 선택된 모드 설명 가이드 */}
+            <div className={`p-4 rounded-2xl border mb-6 text-xs transition-all duration-300 ${
+              postType === 'approval' 
+                ? 'bg-emerald-50 border-emerald-100 text-emerald-900' 
+                : 'bg-blue-50 border-blue-100 text-blue-900'
+            }`}>
+              {postType === 'approval' ? (
+                <div className="space-y-1">
+                  <strong className="block text-sm text-emerald-800 font-extrabold">🌿 애드센스 승인 모드 (AdSense Approval Guide)</strong>
+                  <p className="leading-relaxed">
+                    구글 애드센스 심사를 한 번에 통과하기 위한 최적화 글쓰기입니다. 
+                    <strong>2,000자 이상의 텍스트 중심</strong>으로 작성되며, <strong>광고 코드와 링크/버튼이 배제</strong>됩니다. 
+                    영어 약어나 괄호 영어를 제거한 순수 한글 구조와 함께 1장의 대표 이미지(alt/설명 일치)를 생성합니다.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <strong className="block text-sm text-blue-800 font-extrabold">💰 수익 극대화 모드 (High-CTR Revenue Guide)</strong>
+                  <p className="leading-relaxed">
+                    검색 유입자의 광고 클릭률(CTR)을 높이기 위한 고수익 최적화 포스팅입니다. 
+                    소제목(H2, H3) 아래 <strong>수동광고 코드가 자동으로 배치</strong>되며, <strong>새창 열기가 제한된 전면광고 유도 버튼</strong>과 
+                    상위 노출에 유리한 다수 이미지(3장 나열), 첨부파일 다운로드 디자인 박스를 생성합니다.
+                  </p>
+                </div>
+              )}
+            </div>
             
             <div className="space-y-6">
               {/* 기본 설정 섹션 */}
               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
                 <h3 className="text-sm font-bold text-slate-700 flex items-center gap-1.5 mb-2">
-                  <span className="w-1.5 h-3 bg-blue-600 rounded-full"></span> 기본 설정
+                  <span className={`w-1.5 h-3 rounded-full ${postType === 'approval' ? 'bg-emerald-600' : 'bg-blue-600'}`}></span> 기본 설정
                 </h3>
                 <div className="flex flex-col md:flex-row gap-3">
                   <div className="flex-1">
@@ -311,17 +366,19 @@ export default function Admin() {
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1.5">전면광고 유도 버튼 링크</label>
-                  <input 
-                    type="text" 
-                    value={targetLink}
-                    onChange={(e) => setTargetLink(e.target.value)}
-                    placeholder="비워두면 기본값 '/m' 적용 (예: 특정 랜딩페이지 URL)"
-                    className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-medium text-sm text-blue-600 shadow-sm"
-                    onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
-                  />
-                </div>
+                {postType === 'revenue' && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">전면광고 유도 버튼 링크</label>
+                    <input 
+                      type="text" 
+                      value={targetLink}
+                      onChange={(e) => setTargetLink(e.target.value)}
+                      placeholder="비워두면 기본값 '/m' 적용 (예: 특정 랜딩페이지 URL)"
+                      className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition font-medium text-sm text-blue-600 shadow-sm"
+                      onKeyDown={(e) => e.key === 'Enter' && handleGenerateTistoryAi()}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* 고급 SEO 설정 (아코디언) */}
@@ -416,22 +473,28 @@ export default function Admin() {
                 <button 
                   onClick={handleGenerateTistoryAi}
                   disabled={tistoryAiLoading}
-                  className="w-full bg-slate-900 hover:bg-black text-white font-black px-8 py-5 rounded-2xl shadow-xl transition-all hover:shadow-2xl disabled:bg-slate-300 text-lg flex items-center justify-center gap-3 active:scale-[0.99]"
+                  className={`w-full text-white font-black px-8 py-5 rounded-2xl shadow-xl transition-all hover:shadow-2xl disabled:bg-slate-300 text-lg flex items-center justify-center gap-3 active:scale-[0.99] ${
+                    postType === 'approval' 
+                      ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200' 
+                      : 'bg-slate-900 hover:bg-black shadow-slate-200'
+                  }`}
                 >
                   {tistoryAiLoading ? (
                     <>
                       <div className="w-5 h-5 border-[3px] border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>수익 극대화형 포스팅 제조 중...</span>
+                      <span>{postType === 'approval' ? '애드센스 승인용 포스팅 제조 중...' : '수익 극대화형 포스팅 제조 중...'}</span>
                     </>
                   ) : (
                     <>
                       <span>✨</span>
-                      <span>수익 극대화형 완벽 최적화 포스팅 생성</span>
+                      <span>{postType === 'approval' ? '애드센스 승인용 최적화 포스팅 생성' : '수익 극대화형 완벽 최적화 포스팅 생성'}</span>
                     </>
                   )}
                 </button>
                 <p className="text-center text-xs text-slate-400 mt-3 font-semibold">
-                  구글 AEO(대화형 검색) 스니펫 및 애드센스 전면광고 자동 배치 완료
+                  {postType === 'approval'
+                    ? '구글 SEO 가이드 및 순수 한글 2,000자 최적화 자동 적용'
+                    : '구글 AEO(대화형 검색) 스니펫 및 애드센스 전면광고 자동 배치 완료'}
                 </p>
               </div>
             </div>
@@ -439,9 +502,16 @@ export default function Admin() {
 
             {tistoryAiLoading && (
               <div className="flex flex-col items-center justify-center py-16 text-center bg-gradient-to-br from-slate-50 to-blue-50/20 rounded-2xl border border-slate-100 shadow-inner">
-                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-6"></div>
-                <h3 className="text-xl font-black text-slate-800 mb-2">✨ AI 포스팅 자동 작성 중</h3>
-                <p className="text-slate-500 font-medium text-sm mb-6">구글 SEO 최적화 및 AEO 검색 노출을 위한 최적의 구조로 글을 구성하고 있습니다.</p>
+                <div className={`w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mb-6 ${postType === 'approval' ? 'border-emerald-200 border-t-emerald-600' : 'border-blue-200 border-t-blue-600'}`}></div>
+                <h3 className="text-xl font-black text-slate-800 mb-2">
+                  {postType === 'approval' ? '🌿 애드센스 승인글 자동 작성 중' : '✨ AI 포스팅 자동 작성 중'}
+                </h3>
+                <p className="text-slate-500 font-medium text-sm mb-6">
+                  {postType === 'approval'
+                    ? '2,000자 이상의 정보성 텍스트와 제목 태그 구조, 한글 표기 규칙을 반영하고 있습니다.'
+                    : '구글 SEO 최적화 및 AEO 검색 노출을 위한 최적의 구조로 글을 구성하고 있습니다.'
+                  }
+                </p>
                 
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm max-w-md w-full text-left space-y-4">
                   <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
@@ -501,9 +571,15 @@ export default function Admin() {
                   <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-green-200 shadow-sm">
                     <span>⚡</span> 구글 자동 색인 (JSON-LD) 탑재 완료
                   </span>
-                  <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-orange-200 shadow-sm">
-                    <span>💸</span> 전면광고 유도 버튼 삽입 완료
-                  </span>
+                  {postType === 'revenue' ? (
+                    <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-orange-200 shadow-sm">
+                      <span>💸</span> 전면광고 유도 버튼 삽입 완료
+                    </span>
+                  ) : (
+                    <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-emerald-200 shadow-sm">
+                      <span>🌿</span> 순수 한글 2,000자 구성 완료
+                    </span>
+                  )}
                 </div>
                 
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">

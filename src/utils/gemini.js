@@ -10,7 +10,8 @@ export async function generateTistoryPost({
   blogPurpose = '1',
   randomPersona = '',
   internalLinks = [],
-  targetLink = '/m'
+  targetLink = '/m',
+  postType = 'revenue' // 'approval' or 'revenue'
 }) {
   if (!genAI) {
     throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
@@ -25,10 +26,82 @@ export async function generateTistoryPost({
   const mainKeywordEncoded = encodeURIComponent(mainKeyword);
   const internalLinksStr = JSON.stringify(internalLinks);
 
-  const prompt = `
+  let prompt = '';
+
+  if (postType === 'approval') {
+    prompt = `
 # [Role & Objective]
-당신은 구글 SEO(AEO) 및 수익형 블로그 마케팅 전문가이자, 구글의 AI 탐지 알고리즘을 완벽히 우회하는 '인간 다운' 글쓰기 마스터입니다. 
-입력받은 [키워드 정보], [기존 글 데이터], [글의 목적], [랜덤 페르소나]를 바탕으로, 티스토리 HTML 모드에 바로 붙여넣을 수 있는 '수익 극대화형 완벽 최적화 포스팅 HTML'을 생성하십시오.
+당신은 구글 애드센스(AdSense) 승인 심사를 단 한 번에 통과할 수 있도록 최적화된 전문 학술/정보 블로그 작가이자 구글 AI 탐지 우회 전문가입니다.
+입력받은 [키워드 정보], [글의 목적], [랜덤 페르소나]를 바탕으로, 애드센스 승인 기준(정보성 가치 극대화, 정합성, AI 우회)에 완벽히 부합하는 '애드센스 승인용 포스팅 HTML'을 생성하십시오.
+
+# [Input Data]
+- 메인 키워드 ({MAIN_KEYWORD}): ${mainKeyword}
+- 서브 키워드 ({SUB_KEYWORDS}): ${subKeywords}
+- 연관 키워드 ({RELATED_KEYWORDS}): ${relatedKeywords}
+- 글의 목적 ({BLOG_PURPOSE}): ${blogPurpose}
+- 랜덤 페르소나 ({RANDOM_PERSONA}): ${randomPersona}
+
+# [AdSense Approval Posting Rules (필수 준수 사항)]
+
+1. **글자수 극대화**:
+   - 본문의 글자수는 공백을 포함하여 **반드시 2,000자 이상**으로 풍부하고 정보성 높은 긴 텍스트로 채우십시오.
+   - 단답식 요약보다는 깊이 있고 체계적인 설명(서론, 본론, 결론 구조)을 완성하십시오.
+
+2. **광고 코드 및 외부 링크 배제**:
+   - 아직 승인받지 않은 블로그이므로 **구글 애드센스 스크립트 코드나 광고 삽입용 ins 태그 등을 절대로 넣지 마십시오**.
+   - 외부 사이트로 유도하는 하이퍼링크(a 태그)나 선정적인 버튼, 배너 등을 **절대 포함하지 마십시오**. 오직 순수 정보성 글만으로 구성되어야 합니다.
+
+3. **영어 표기 및 영문 괄호 완벽 제거**:
+   - 본문 내 모든 영어 표기, 영어 원어명, 괄호 안의 영문 표기(예: "multiverse theory", "Hugh Everett", "Many-Worlds" 등)를 **완전히 지우고 오직 순수 한글 단어로만 작성**하십시오.
+   - 예: "다중우주론(multiverse theory)" -> "다중우주론"으로 순수하게 작성.
+
+4. **제목(H 태그)의 순서적 논리 구조**:
+   - 소제목은 반드시 제목1 -> 제목2 -> 제목3 순으로 중첩되어야 합니다.
+   - 본문의 첫 소제목은 **제목 1 (<h2>)**로 하십시오.
+   - 그 다음 소제목은 **제목 2 (<h3>)**로 하십시오.
+   - 그 이후에 나오는 네 번째 및 모든 소제목들은 전부 **제목 3 (<h4>)**으로만 설정하십시오. (즉, H 태그 구조는 <h2> -> <h3> -> <h4> -> <h4>... 순이어야 하며, <h4> 이하의 태그나 논리 흐름의 단계를 건너뛰지 마십시오.)
+
+5. **첫 부분 일치 규칙 (서론 첫 문장)**:
+   - 본문의 서론 첫 번째 문장은 **이 포스팅의 제목(메인 키워드가 들어간 생성될 제목)을 반드시 그대로 토대로 단어를 포함하여 시작**해야 합니다.
+   - 예: 제목이 "다중우주론의 무한한 가능성"이라면, 서론 첫 문장은 "다중우주론: 무한한 가능성의 우주를 탐구하기 위해서 오늘은 다중우주론의 개념과 기원 그리고 유형과 가능성 등에 대해 알아보도록 하겠습니다." 처럼 제목 문구가 자연스럽게 포함된 서두로 설계하십시오.
+
+6. **대표 이미지 1장 최적화**:
+   - 본문 서론 바로 아래에 **오직 1장의 대표 이미지 영역만 생성**하십시오.
+   - 이 이미지의 alt 속성과 캡션(figcaption) 설명글은 **반드시 이 포스팅의 제목과 100% 동일한 글자**로 지정하십시오.
+   - 이미지 코드 규격:
+     <!-- [대표 이미지 삽입 구간: {제목}] -->
+     <!-- 대체 텍스트(alt): {제목} -->
+     <figure style="text-align: center; margin: 20px 0; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px;">
+       <div style="background: #f8fafc; padding: 40px; border-radius: 8px; color: #64748b; font-weight: bold;">
+         📷 {제목} - 대표 이미지
+       </div>
+       <figcaption style="font-size: 13px; color: #64748b; margin-top: 8px; font-weight: 500;">{제목}</figcaption>
+     </figure>
+
+7. **인간적인 톤앤매너 및 AI 우회**:
+   - 정보성 70%, 본인의 주관이나 직접 쓴 듯한 후기/체험성 느낌 30%를 조합하십시오.
+   - 문장 중간에 "이게 의외로 놓치기 쉽습니다", "저도 처음에 공부할 때 정말 헷갈렸던 부분인데요" 같은 인간적인 독백/경험형 문장을 3회 이상 삽입하고 문장 길이를 불규칙하게 섞어 구글 AI 탐지 필터를 완벽 우회하십시오.
+
+8. **구조화 데이터**:
+   - HTML 최상단에 포스팅을 요약 설명하는 [script type="application/ld+json"] (Article 스키마) 데이터 구조만 삽입하십시오. (여기에 광고 코드는 절대 포함하지 마십시오.)
+
+# [Output Format]
+마크다운 코드 블록 없이 순수 JSON 형식으로만 정확히 반환하십시오.
+
+{
+  "keywordAnalysis": "해당 키워드의 정보성 가치 및 구글 SEO 노출 예상 분석",
+  "aeoStrategy": "구글 검색 엔진 및 AEO 노출을 위해 서두 정합성과 H 태그 구조가 어떻게 매칭되었는지 설명",
+  "adPlacementGuide": "애드센스 승인 완료 직후 적용하기에 최적인 광고 배치 자리 및 유도 위치 추천 (현재 본문엔 광고 없음)",
+  "title": "클릭을 유발하면서 정보성이 돋보이는 애드센스 승인용 포스팅 제목",
+  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 script type='application/ld+json' 형태의 구글 자동 색인 구조화 데이터 포함. 순수 한글 중심, 광고 코드 배제, 대표 이미지 1장만 배치하고 alt/figcaption은 글의 제목과 100% 똑같이 설정할 것. 본문 길이는 2000자 이상으로 텍스트를 아주 길게 채울 것.",
+  "hashtags": "메인키워드,서브키워드1,서브키워드2,서브키워드3,서브키워드4,서브키워드5,연관키워드1,연관키워드2,연관키워드3,연관키워드4,연관키워드5"
+}
+`;
+  } else {
+    prompt = `
+# [Role & Objective]
+당신은 구글 SEO(AEO) 및 수익형 블로그 마케팅 전문가이자, 구글의 AI 탐지 알고리즘을 완벽히 우회하고 방문자의 광고 클릭률(CTR)을 극대화하는 카피라이팅 전문가입니다. 
+입력받은 [키워드 정보], [기존 글 데이터], [글의 목적], [랜덤 페르소나]를 바탕으로, 티스토리 HTML 모드에 바로 붙여넣어 수익을 최대로 끌어낼 수 있는 '수익형 포스팅 HTML'을 생성하십시오.
 
 # [Input Data]
 - 메인 키워드 ({MAIN_KEYWORD}): ${mainKeyword}
@@ -38,74 +111,74 @@ export async function generateTistoryPost({
 - 랜덤 페르소나 ({RANDOM_PERSONA}): ${randomPersona}
 - 내부 링크 목록 ({INTERNAL_LINKS}): ${internalLinksStr}
 
-# [Step-by-Step Execution Rules]
+# [Revenue Posting Rules (필수 준수 사항)]
 
-### Step 1. 선택된 목적 및 페르소나 동기화 (UI 매핑 완료)
-- 너는 UI에서 선택되어 주입된 {BLOG_PURPOSE} (현재 목적 코드: ${blogPurpose})의 세부 지침(정보/리뷰/비교/노하우/문제해결)에 맞춰 HTML 본문의 뼈대와 태그 구조를 완벽히 빌드하라.
-- 너는 UI에서 선택되어 주입된 {RANDOM_PERSONA} (현재 페르소나 정보: ${randomPersona})의 어조와 캐릭터성(친절/깐깐/큐레이터/야매고수 등)을 100% 빙의하여 문장을 구사하라.
-- 구글의 AI 콘텐츠 패턴 매칭을 무력화하기 위해, 단문과 장문을 불규칙하게 섞고 문장 중간중간 "저도 처음엔 당황했는데", "이게 의외로 놓치기 쉽습니다" 같은 '인간적인 독백/경험형 문장'을 반드시 3회 이상 가미하라.
+1. **소제목 및 수동광고 코드 강제 삽입**:
+   - 수익형 포스팅의 본문에는 총 2회의 수동 애드센스 광고 코드를 본문 내에 정확히 포함해야 합니다.
+   - **첫 번째 수동광고**: 본문 첫 번째 **제목 1 (<h2>)** 소제목과, 그 바로 아래 나오는 **한 줄의 첫 문장 설명**이 끝나는 시점에 아래의 [디스플레이 광고 코드]를 삽입하십시오.
+   - **두 번째 수동광고**: 본문 두 번째 **제목 2 (<h3>)** 소제목과, 그 바로 아래 나오는 **한 줄의 첫 문장 설명**이 끝나는 시점에 아래의 [인피드 광고 코드]를 삽입하십시오.
 
-### Step 2. 키워드 및 YMYL 안전장치 작동
-- {MAIN_KEYWORD} (${mainKeyword})는 H2/H3 태그 및 본문 상단 100자 이내에 반드시 포함해야 합니다.
-- 만약 주입된 {SUB_KEYWORDS} (${subKeywords})와 {RELATED_KEYWORDS} (${relatedKeywords})가 비어있거나 부족할 경우, 입력된 {MAIN_KEYWORD} (${mainKeyword})를 분석하여 구글 AdSense 광고 단가가 높고 유입량이 많은 최적의 서브 키워드 5개와 연관 키워드 5개를 스스로 자동으로 산정하여 설정하십시오.
-- 자동으로 설정되거나 전달받은 서브 키워드 5개와 연관 키워드 5개는 본문 흐름에 방해되지 않게 문맥적으로 자연스럽게 분산 배치하여 본문을 작성하십시오.
-- 그리고 반환할 JSON의 'keywordAnalysis' 필드 첫 부분에 "이번 포스팅에 자동으로 적용된 서브 키워드: [선정된 5개], 연관 키워드: [선정된 5개]"를 명확하게 포함해 주십시오. (이를 통해 사용자가 어떤 키워드가 자동 타겟팅되었는지 결과 분석에서 따로 바로 확인할 수 있어야 합니다.)
-- 또한 반환할 JSON의 'hashtags' 필드에 [메인 키워드] 1개, 선정된 [서브 키워드] 5개, [연관 키워드] 5개를 모두 합쳐 총 11개의 키워드를 공백 없이 오직 쉼표(,)로만 구분한 하나의 텍스트 문자열로 작성하여 반환하십시오. (예: "메인키워드,서브키워드1,서브키워드2,서브키워드3,서브키워드4,서브키워드5,연관키워드1,연관키워드2,연관키워드3,연관키워드4,연관키워드5")
-- 금융/건강 등 고단가 카테고리일 경우, 절대 의학적/법적 확언을 피하고 "일반적인 정보 공유 차원이며, 전문가 상담이 필요할 수 있습니다"라는 면책 문구를 정교하게 흐릿하고 자연스러운 톤으로 본문 하단에 녹여 쓰십시오.
+2. **클릭 유도 요소 및 전면광고 극대화 (새창 열기 금지)**:
+   - 본문 중/하단에 시선을 끄는 화려한 CSS 스타일의 버튼형 전면광고 유도 링크를 최소 1개 이상 반드시 삽입하십시오.
+   - **중요**: 전면광고(Interstitial Ads)의 노출 빈도를 높이기 위해, 본문의 모든 전면광고 유도 버튼 링크(a href="${targetLink}")와 본문 내 클릭 유도 이미지 링크에는 **절대로 target="_blank" (새창에서 열기)를 넣지 마십시오!** 반드시 현재 창(target="_self" 또는 target 속성 제외)에서 열리도록 작성하십시오.
+   - 버튼 예시:
+     <div style="text-align:center; margin: 30px 0;">
+       <a href="${targetLink}" style="display:inline-block; padding:18px 45px; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; font-size:18px; font-weight:bold; border-radius:12px; text-decoration:none; box-shadow:0 10px 15px -3px rgba(37,99,235,0.3); transition:all 0.2s;">👉 ${mainKeyword} 관련 조회 및 신청 바로가기 👆</a>
+     </div>
 
-### Step 3. 구조적 SEO 및 스키마 삽입
-- HTML 최상단에 해당 포스팅 전용 \`<script type="application/ld+json">\` 스크립트를 삽입해야 합니다.
-- 본문 내용 중 핵심 질문 2가지를 뽑아 **구글 리치 결과 노출용 FAQ 구조화 데이터(FAQPage Schema)**를 JSON-LD 내에 포함해야 합니다. 하나의 스키마 데이터 구조 안에 Article과 FAQPage가 동시에 정의될 수 있도록 구성해 주십시오. (예: @graph를 사용하거나 복합 구조 활용)
+3. **다수 이미지 배치 전략 (상위 노출용)**:
+   - 상위 노출에 유리하도록 본문에 여러 장의 시각 자료 구간을 분산 생성하십시오.
+   - **메인 정보성 이미지**: 본문 상단(H2 아래)에 공식 사이트 캡처 이미지 구간을 1개 만드십시오.
+   - **3장 가로 나열 이미지**: 본문 하단(H3 아래)에 상위 노출 개수를 채우기 위한 3장의 이미지 구간을 만드십시오.
+   - 이미지 코드 예시:
+     <!-- [대표 정보성 이미지: ${mainKeyword} 관련 모의계산/공식화면] -->
+     <!-- [상위노출 보조 이미지 3장 가로 나열 구간] -->
 
-### Step 4. 이미지 최적화 및 구글 검색 링크 매핑
-- 본문 중 맥락이 전환되거나 시각 자료가 필요한 위치에 반드시 아래 규격의 HTML 주석과 앵커 태그를 생성하십시오.
-- 규격:
-  <!-- [이미지 삽입 구간: ${mainKeyword} 관련 시각 자료] -->
-  <!-- 권장 alt 태그: {추천 alt 키워드 문구} -->
-  <p><a href="https://www.google.com/search?tbm=isch&q=${mainKeywordEncoded}" target="_blank" style="color: #2b6cb0; text-decoration: underline;">👉 글과 관련된 최적의 이미지 구글에서 바로 찾기 (클릭)</a></p>
+4. **첨부파일 서식 영역 제공**:
+   - 포스팅의 신뢰도와 클릭률을 높이기 위해, 본문 하단부에 아래 예시 형태의 다운로드 가능한 관련 첨부파일(신청 서식 등) 디자인 박스 영역을 삽입하십시오.
+   - 첨부파일 코드 예시:
+     <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin: 25px 0; background-color: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
+       <div>
+         <span style="font-weight: bold; color: #334155; font-size: 14px;">📄 ${mainKeyword} 신청 서식 및 안내 자료.hwp</span>
+         <span style="color: #64748b; font-size: 11px; display: block; margin-top: 3px;">용량: 0.12MB / 양식 문서</span>
+       </div>
+       <a href="${targetLink}" style="background-color: #475569; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold;">다운로드</a>
+     </div>
 
-# [애드센스 광고 삽입 가이드]
-- HTML 최상단(JSON-LD 스크립트 바로 아래)에 아래 자동 광고 스크립트를 1회 반드시 삽입하십시오.
-  \`\`\`html
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"></script>
-  \`\`\`
-- 본문 소제목(H2, H3) 사이나 단락과 단락 사이 등 문맥이 전환되는 시점에 아래 2개의 애드센스 코드를 각각 최소 1회 이상 삽입하십시오.
-  (광고 코드 1 - 디스플레이)
-  \`\`\`html
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"></script>
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4969939875697438" data-ad-slot="6601142958" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  \`\`\`
-  (광고 코드 2 - 인피드)
-  \`\`\`html
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"></script>
-  <ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-layout-key="-hv-h+25-5w+88" data-ad-client="ca-pub-4969939875697438" data-ad-slot="1636074930"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  \`\`\`
-- 본문 중/하단에 시선을 확 사로잡는 화려한 CSS 스타일의 버튼형 전면광고 유도 링크를 최소 1개 이상 반드시 삽입하십시오.
-  (예: \`<div style="text-align:center; margin: 40px 0;"><a href="${targetLink}" style="display:inline-block; padding:18px 40px; background:#2563eb; color:#fff; font-size:18px; font-weight:bold; border-radius:12px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.1);">👉 내 예상 지원금/환급금 1분 만에 조회하기</a></div>\`)
+5. **키워드 자동 분산 배치 및 YMYL 면책 문구**:
+   - {MAIN_KEYWORD} (${mainKeyword})는 본문 상단 100자 이내에 꼭 포함되게 하십시오.
+   - 전달된 서브 키워드나 연관 키워드가 부족할 경우, 스스로 고단가/고유입 최적 키워드 5개씩 선정하여 문맥 속에 고르게 배치하고, 반환 JSON의 'keywordAnalysis' 첫 부분에 이를 적어 주십시오.
+   - 해시태그는 공백 없이 쉼표로만 구분된 11개(메인1 + 서브5 + 연관5)의 키워드 목록을 만드십시오.
+   - 본문 최하단에 작고 흐릿한 톤으로 "본 정보는 참고용이며 상세 내용은 공식 문의를 통해 확인하십시오" 형태의 정교한 YMYL 면책 문구를 추가하십시오.
 
-# [내부 링크 삽입 가이드]
-- 입력받은 내부 링크 목록 (${internalLinksStr})의 아이템이 존재할 경우, 글 흐름에 맞는 적절한 본문 영역 혹은 단락 사이에 관련 추천 포스팅 제목과 링크(<a> 태그)를 자연스러운 어조로 연결하여 최소 1회 이상 삽입하십시오.
-  (예: \`<p>또한, 많은 분들이 참고하시는 <a href="링크" style="color: #2b6cb0; text-decoration: underline;">"제목"</a> 포스팅을 읽어보시면 더욱 구체적인 팁을 얻으실 수 있습니다.</p>\`)
+6. **구조화 데이터 및 스키마**:
+   - 최상단에 FAQPage와 Article이 결합된 [script type="application/ld+json"] 구조화 데이터를 넣어 구글 리치 스니펫 검색 노출을 극대화하십시오.
 
-# [Constraint & Quality Check]
-- 현재 시점: ${currentYear}년 ${currentMonth}월 (모든 정보는 ${currentYear}년 최신 트렌드를 기준으로 작성하십시오.)
-- 타인의 글을 단순히 복사하는 형식을 절대 지양하고, 정보성 가치가 높은 독창적 포스팅을 지향합니다.
-- 본문의 길이는 매우 풍부하게(최소 1,500자 이상) 작성되어야 합니다.
+# [광고 코드 리소스]
+- (자동 광고 스크립트 - 최상단용)
+  &lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"&gt;&lt;/script&gt;
+- (디스플레이형 광고 코드 - H2 직후 본문 첫 문장 아래 배치용)
+  &lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"&gt;&lt;/script&gt;
+  &lt;ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4969939875697438" data-ad-slot="6601142958" data-ad-format="auto" data-full-width-responsive="true"&gt;&lt;/ins&gt;
+  &lt;script&gt;(adsbygoogle = window.adsbygoogle || []).push({});&lt;/script&gt;
+- (인피드형 광고 코드 - H3 직후 본문 첫 문장 아래 배치용)
+  &lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4969939875697438" crossorigin="anonymous"&gt;&lt;/script&gt;
+  &lt;ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-layout-key="-hv-h+25-5w+88" data-ad-client="ca-pub-4969939875697438" data-ad-slot="1636074930"&gt;&lt;/ins&gt;
+  &lt;script&gt;(adsbygoogle = window.adsbygoogle || []).push({});&lt;/script&gt;
 
-위 가이드라인에 따라 완벽하게 구조화된 '티스토리용 HTML 본문'과 전략을 분석해주십시오.
+# [Output Format]
 마크다운 코드 블록 없이 순수 JSON 형식으로만 정확히 반환하십시오.
 
 {
-  "keywordAnalysis": "해당 키워드의 ${currentYear}년 예상 CPC 수준 및 공략 세부 키워드 제안",
+  "keywordAnalysis": "이번 포스팅에 자동으로 적용된 서브 키워드: [선정된 5개], 연관 키워드: [선정된 5개] - 예상 CPC 수준 분석",
   "aeoStrategy": "AI 검색 엔진(AEO)에 노출되기 위한 해당 글의 핵심 답변 요약 전략",
-  "adPlacementGuide": "전면광고 유도 버튼의 효과적인 배치 위치 및 유도 문구 팁",
+  "adPlacementGuide": "수동광고와 전면광고 유도 버튼이 배치된 곳의 효과적인 CTR 분석",
   "title": "클릭을 유발하는 고단가 최적화 제목",
-  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 <script type='application/ld+json'> 형태의 구글 자동 색인 구조화 데이터와 함께 애드센스 자동 광고 스크립트를 포함할 것. 글 중간에 제공된 애드센스 광고 코드 2가지를 적절히 배치할 것. 글 중/하단에 시선을 확 사로잡는 화려한 CSS 스타일의 <a href='${targetLink}'> 형태 전면광고 유도 버튼을 최소 1개 이상 반드시 삽입할 것. 본문 길이는 매우 길게(1500자 이상) 작성할 것.",
+  "htmlContent": "<h1>제외, <h2>부터 시작하는 티스토리 블로그 본문 HTML 내용 전체. 반드시 최상단에 구조화 데이터 스크립트와 애드센스 자동 광고 스크립트 포함. H2 직후 첫 문장 다음 수동광고1, H3 직후 첫 문장 다음 수동광고2를 반드시 배치. 본문 하단에 target='_blank'가 배제된 전면광고 유도 버튼과 첨부파일 서식 디자인 박스를 꼭 배치하고 본문 길이는 1500자 이상으로 매우 상세히 쓸 것.",
   "hashtags": "메인키워드,서브키워드1,서브키워드2,서브키워드3,서브키워드4,서브키워드5,연관키워드1,연관키워드2,연관키워드3,연관키워드4,연관키워드5"
 }
 `;
+  }
 
   try {
     const result = await model.generateContent(prompt);
