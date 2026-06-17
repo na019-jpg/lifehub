@@ -17,7 +17,7 @@ export async function generateTistoryPost({
     throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -196,7 +196,7 @@ export async function recommendImageAndLink(keyword) {
     throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `
 당신은 구글 애드센스 및 제휴 마케팅 전문가입니다.
@@ -223,7 +223,7 @@ export async function generateHighCtrTitles(mainKeyword, subKeywords = '') {
     throw new Error('VITE_GEMINI_API_KEY가 설정되지 않았습니다.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `
 당신은 구글 애드센스 블로그 마케팅 전문가이자 고수익 블로거입니다.

@@ -9,7 +9,7 @@ if (!apiKey) {
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 const mainKeyword = "청년도약계좌 조건";
 const subKeywords = "신청방법, 가입 조건, 금리 비교, 혜택, 구비서류";

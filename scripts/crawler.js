@@ -15,7 +15,7 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 // 구글 최신 플래시 모델 적용
-const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // 8대 카테고리 분야 전반을 다루는 100+ 꿀팁 키워드 풀 (트렌드 조회 실패 시 Fallback)
 const LIFESTYLE_KEYWORDS = [
